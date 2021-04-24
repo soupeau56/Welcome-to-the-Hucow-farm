@@ -294,6 +294,10 @@ function Events() {
                 && !twineVars().player.clothings.pant
                 && !twineVars().player.clothings.top
         },
+        "Clara_can_move_in_Philippe_house": () => {
+            console.log("is tied up",clara.bondage.isTied())
+            return !clara.bondage.isTied()
+        },
         "Someone_take_a_shower_in_Philippe_house": () => {
             return eventCondList["Philippe_take_a_shower"]()
                 || eventCondList["Morann_take_a_shower"]()
@@ -407,6 +411,11 @@ function Events() {
             return isInTime(new Time(11, 30), new Time(11, 59))
                 || isInTime(new Time(20, 0), new Time(20, 29))
         },
+        "Lisa_talk_lisa_bedroom": () => {
+            return isInTime(new Time(11, 30), new Time(11, 59))
+                || isInTime(new Time(20, 0), new Time(20, 29))
+                || eventCondList["Lisa_read_book_in_her_room"]()
+        },
         "Lisa_in_the_dinning_room": () => {
             return eventCondList["Lisa_talk_dinning_room"]()
         },
@@ -417,7 +426,7 @@ function Events() {
             return eventCondList["Lisa_talk_living_room"]()
         },
         "Lisa_in_the_lisa_bedroom": () => {
-            return eventCondList["Lisa_read_book_in_her_room"]()
+            return eventCondList["Lisa_talk_lisa_bedroom"]()
                 || eventCondList["Lisa_sleep_in_his_room"]()
         },
         "Lisa_in_the_bathroom": () => {
@@ -485,6 +494,7 @@ window.src = {
 "BLOWJOB3":"images/Action/BLOWJOB3.gif",
 "BLOWJOB4":"images/Action/BLOWJOB4.gif",
 "BREAKFAST":"images/Action/BREAKFAST.jpg",
+"BONDAGE_ROPE":"images/Action/BONDAGE_ROPE.jpg",
 "BREAKFAST2":"images/Action/BREAKFAST2.gif",
 "BREAKFAST3":"images/Action/BREAKFAST3.gif",
 "CAGED_BDSM":"images/Action/CAGED_BDSM.jpg",
@@ -913,6 +923,7 @@ function ClaraController(param) {
     this.clothing = param.clothingRep
     this.inventory = param.inventoryRep
     this.playerRep = param.playerRep
+    this.bondage = param.playerBondageRep,
     this.work = param.workRep
     this.tf = param.tfRep
     this.wardrobe = param.wardrobeRep
@@ -993,6 +1004,7 @@ const run = () => {
             playerClothingRep: new PlayerClothingRepository,
             playerInventoryRep: new PlayerInventoryRepository,
             playerRep: new PlayerRepository,
+            playerBondageRep: new PlayerRepositoryBondage,
             playerTF: new PlayerTFRepository,
             playerWorkRep: new PlayerWorkRepository,
             sideBarRep: new SideBarRepository,
@@ -1005,6 +1017,7 @@ const run = () => {
             clothingRep: repsList.playerClothingRep,
             inventoryRep: repsList.playerInventoryRep,
             playerRep: repsList.playerRep,
+            playerBondageRep: repsList.playerBondageRep,
             workRep: repsList.playerWorkRep,
             tfRep: repsList.playerTF,
             wardrobeRep: repsList.wardrobeRep
@@ -1551,7 +1564,7 @@ function PlayerBodyRepository() {
         }
     }
 
-    this.setTail = (value) => {
+    this.addTail = (value) => {
         this.body().tail.here = true
         this.body().tail.type = value
     }
@@ -1680,6 +1693,10 @@ function PlayerInventoryRepository() {
   else items[itemName] = { number: number  }
  }
 
+ this.haveItem = (itemName) => {
+     return  this.data().items[itemName] !== undefined
+ }
+
 
 }
 /* twine-user-script #17: "PlayerRepository.js" */
@@ -1690,7 +1707,6 @@ function PlayerRepository() {
 
     this.setBeginingData = () => {
         this.player().name = "Clara"
-        this.player().items = ["dildo"]
     }
 
     // player.name = "Clara".
@@ -1706,7 +1722,29 @@ function PlayerRepository() {
     // }
 
 }
-/* twine-user-script #18: "PlayerTFRepository.js" */
+/* twine-user-script #18: "PlayerRepositoryBondage.js" */
+function PlayerRepositoryBondage() {
+
+    if(state.variables.player == undefined) state.variables.player = {}
+    if(state.variables.player.bondage == undefined) state.variables.player.bondage = {}
+    this.bondage = () => state.variables.player.bondage
+
+    this.setBeginingData = () => {
+        this.bondage().tiedUp = false
+        this.bondage().tieType = ""
+    }
+
+    this.isTied = () => this.bondage().tiedUp
+    this.toTieUp = (tieType) => {
+        this.bondage().tieType = tieType
+        this.bondage().tiedUp = true
+    }
+    this.untie = () => {
+        this.bondage().tieType = ""
+        this.bondage().tiedUp = false
+    }
+}
+/* twine-user-script #19: "PlayerTFRepository.js" */
 function PlayerTFRepository(){
    
     this.tfLimit = {
@@ -1831,7 +1869,7 @@ function PlayerTFRepository(){
 
 
 }
-/* twine-user-script #19: "PlayerWorkRepository.js" */
+/* twine-user-script #20: "PlayerWorkRepository.js" */
 function PlayerWorkRepository() {
 
     if(state.variables.player == undefined) state.variables.player = {}
@@ -1903,7 +1941,7 @@ The author does not support such practices in real life and if this kind of cont
 
 
 [[Start|chap1_p1][firstLoad(),clara.wardrobe.wearOutfit(&quot;monday&quot;),sideBar.show()]]
-[[Skip intro|Philippe_House][firstLoad(),clara.wardrobe.wearOutfit(&quot;monday&quot;),sideBar.show(),$place = &quot;clara_bedroom&quot;,clara.body.setFeet(&quot;HOOF&quot;),$place = &quot;barn&quot;, clock.timeSleep(10)]]
+[[Skip intro|Philippe_House][firstLoad(),clara.wardrobe.wearOutfit(&quot;monday&quot;),sideBar.show(),$place = &quot;clara_bedroom&quot;,clara.body.setFeet(&quot;HOOF&quot;),clara.body.addTail(&quot;COW&quot;),$place = &quot;barn&quot;, clock.timeSleep(10)]]
 
 &lt;&lt;set $player_can_move_in_house to true&gt;&gt;</tw-passagedata><tw-passagedata pid="2" name="chap1_p1" tags="" position="81,807" size="100,100">$player.name Smith is about 1m 90, with short brown hair, brown eyes. She is a sporty tomboy girl studying  in biologie. She regularly plays sports and is physically taut.
 
@@ -1988,7 +2026,7 @@ The other dark haired presents hereself as Lisa.
 &lt;&lt;display Lisa_Farm&gt;&gt;
 
 [[have breakfast|Philippe_first_milking]]
-&lt;&lt;set $returnPage to passage()&gt;&gt;</tw-passagedata><tw-passagedata pid="10" name="Morann_talk_Farm" tags="" position="4027,296" size="100,100">Talk with Morann: Love : &lt;&lt;print Morann.getLove()&gt;&gt; Submission &lt;&lt;print Morann.getSub()&gt;&gt;
+&lt;&lt;set $returnPage to passage()&gt;&gt;</tw-passagedata><tw-passagedata pid="10" name="Morann_talk_Farm" tags="" position="3976,296" size="100,100">Talk with Morann: Love : &lt;&lt;print Morann.getLove()&gt;&gt; Submission &lt;&lt;print Morann.getSub()&gt;&gt;
 &lt;&lt;if !visited(&quot;Morann_What_happened_body&quot;)&gt;&gt;
 [[What happened to our body?|Morann_What_happened_body]]&lt;&lt;endif&gt;&gt;&lt;&lt;if visited(&quot;Morann_What_happened_body&quot;) &amp;&amp; !visited(&quot;Morann_mean_basically_human&quot;)&gt;&gt;
 [[What do you mean by i&#39;m &quot;basically a human ?&quot;.|Morann_mean_basically_human][$Morann_mean_basically_human=true]]&lt;&lt;endif&gt;&gt;&lt;&lt;if !visited(&quot;Morann_like_your_hair&quot;)&gt;&gt;
@@ -1996,12 +2034,18 @@ The other dark haired presents hereself as Lisa.
 [[So you&#39;re here for the holidays ...?|Morann_here_for_holidays]]&lt;&lt;endif&gt;&gt;&lt;&lt;if $Morann_here_for_holidays&gt;&gt;&lt;&lt;endif&gt;&gt;&lt;&lt;if !visited(&quot;Morann_how_is_Philippe&quot;)&gt;&gt;
 [[How is Philippe?|Morann_how_is_Philippe]]&lt;&lt;endif&gt;&gt;&lt;&lt;if $place == &quot;vegetable_garden&quot;&gt;&gt;
 &lt;&lt;display Morann_talk_Farm_vegetable_garden&gt;&gt;&lt;&lt;endif&gt;&gt;
-[[return|$returnPage]]</tw-passagedata><tw-passagedata pid="11" name="Lisa_talk_Farm" tags="" position="3816,1013" size="100,100">Talk with Lisa: Love : &lt;&lt;print Lisa.getLove()&gt;&gt; Submission &lt;&lt;print Lisa.getSub()&gt;&gt;
+&lt;&lt;if clara.inventory.haveItem(&quot;rope&quot;) &amp;&amp; visited(&quot;MORANN_BEDROOM_ROPE_TOOK&quot;) &amp;&amp; !visited(&quot;Morann_talk_farm_found_rope&quot;)&gt;&gt;
+[[I found a rope in your bedroom|Morann_talk_farm_found_rope]]&lt;&lt;endif&gt;&gt;&lt;&lt;if visited(&quot;Morann_talk_farm_found_rope&quot;) &amp;&amp; !visited(&quot;Morann_talk_Farm_tie_rope&quot;)&gt;&gt;
+[[You would like me to tie you up with a rope?|Morann_talk_Farm_tie_rope]]&lt;&lt;endif&gt;&gt;&lt;&lt;if clara.inventory.haveItem(&quot;rope&quot;)&gt;&gt; 
+[[Try to catch Morann by surprise and tie her with rope|Morann_trie_tie_rope]]&lt;&lt;endif&gt;&gt;
+[[return|$returnPage]]</tw-passagedata><tw-passagedata pid="11" name="Lisa_talk_Farm" tags="" position="3797,1017" size="100,100">Talk with Lisa: Love : &lt;&lt;print Lisa.getLove()&gt;&gt; Submission &lt;&lt;print Lisa.getSub()&gt;&gt;
 &lt;&lt;if visited(&quot;Morann_mean_basically_human&quot;) &amp;&amp; !visited(&quot;Lisa_Born_as_Hucow&quot;)&gt;&gt;
 [[So you too were born as a hucow ?|Lisa_Born_as_Hucow]]&lt;&lt;endif&gt;&gt;&lt;&lt;if visited(&quot;Lisa_Born_as_Hucow&quot;) &amp;&amp; !visited(&quot;Lisa_close_to_Morann&quot;)&gt;&gt;
 [[You and Morann seem to be very close.|Lisa_close_to_Morann]]&lt;&lt;endif&gt;&gt;&lt;&lt;if !visited(&quot;Lisa_how_long_living_here&quot;) &amp;&amp; visited(&quot;Lisa_Born_as_Hucow&quot;)&gt;&gt;
 [[For how long time, did you lived here.|Lisa_how_long_living_here]]&lt;&lt;endif&gt;&gt;&lt;&lt;if !visited(&quot;Lisa_how_is_Philippe&quot;)&gt;&gt;
-[[How is Philippe?|Lisa_how_is_Philippe]]&lt;&lt;endif&gt;&gt;
+[[How is Philippe?|Lisa_how_is_Philippe]]&lt;&lt;endif&gt;&gt;&lt;&lt;if clara.inventory.haveItem(&quot;rope&quot;) &amp;&amp; !visited(&quot;Lisa_talk_farm_ask_tie_rope&quot;)&gt;&gt;
+[[I found a rope, would you like me to tie you up with it?|Lisa_talk_farm_ask_tie_rope]]&lt;&lt;endif&gt;&gt;&lt;&lt;if clara.inventory.haveItem(&quot;rope&quot;)&gt;&gt; 
+[[Try to catch Lisa by surprise and tie her with rope|Lisa_trie_tie_rope]]&lt;&lt;endif&gt;&gt;
 [[return|$returnPage]]</tw-passagedata><tw-passagedata pid="12" name="Philippe_first_milking" tags="" position="223,2699" size="100,100">You have finished your breakfast and Philippe has just arrived.
 
 &quot;It&#39;s milking time girls.&quot;
@@ -2122,7 +2166,10 @@ Qu&#39;allez vous faire
 [[How did I get turned into a hucow?|Philippe_talk_Farm_hucow_tf]]&lt;&lt;endif&gt;&gt;&lt;&lt;if visited(&quot;Find_your_phone&quot;)&gt;&gt;
 [[I lost my phone, can I borrow yours?|Philippe_talk_Farm_borrow_phone]]&lt;&lt;endif&gt;&gt;&lt;&lt;if !visited(&quot;Philippe_talk_Farm_beautiful_cows&quot;)&gt;&gt;
 [[You have beautiful cows from what I see.|Philippe_talk_Farm_beautiful_cows]]&lt;&lt;endif&gt;&gt;&lt;&lt;if !visited(&quot;Philippe_talk_Farm_Morann_and_Lisa&quot;)&gt;&gt; 
-[[How long have you lived with Morann and Lisa?|Philippe_talk_Farm_Morann_and_Lisa]]&lt;&lt;endif&gt;&gt;
+[[How long have you lived with Morann and Lisa?|Philippe_talk_Farm_Morann_and_Lisa]]&lt;&lt;endif&gt;&gt;&lt;&lt;if clara.inventory.haveItem(&quot;rope&quot;) &amp;&amp; !visited(&quot;Philippe_talk_farm_ask_tie_rope&quot;)&gt;&gt;
+[[I found a rope, would you like me to tie you up with it?|Philippe_talk_farm_ask_tie_rope]]&lt;&lt;endif&gt;&gt;
+&lt;&lt;if clara.inventory.haveItem(&quot;rope&quot;)&gt;&gt; 
+[[Try to catch Philippe by surprise and tie him with rope|Philippe_trie_tie_rope]]&lt;&lt;endif&gt;&gt;
 [[return|$returnPage]]</tw-passagedata><tw-passagedata pid="34" name="Farm_travel" tags="" position="75,1038" size="100,100">You are in the car, with Philippe.
 
 &lt;&lt;display Philippe_talk_begin&gt;&gt;
@@ -2138,9 +2185,10 @@ You take a shower and go to bed.
 
 [img[src.SHOWER]]
 
-[[sleep |farm_firt_sleep][clara.wardrobe.wearOutfit(&quot;pajamas&quot;)]]</tw-passagedata><tw-passagedata pid="36" name="Choice_Philippe_House" tags="" position="2201,280" size="100,100">&lt;&lt;set $actualPassage to passage()&gt;&gt;&lt;&lt;if $player_can_move_in_house == true&gt;&gt;
+[[sleep |farm_firt_sleep][clara.wardrobe.wearOutfit(&quot;pajamas&quot;)]]</tw-passagedata><tw-passagedata pid="36" name="Choice_Philippe_House" tags="" position="2201,280" size="100,100">&lt;&lt;set $actualPassage to passage()&gt;&gt;
 [[wait 1 hour |$actualPassage][clock.timeGoes(1,0)]]
 [[wait 15 minutes |$actualPassage][clock.timeGoes(0,15)]]
+&lt;&lt;if event(&quot;Clara_can_move_in_Philippe_house&quot;)&gt;&gt;
 Go to:
 1st floor~
 [[Your Bedroom|Philippe_House][$place = &quot;clara_bedroom&quot;]]&lt;&lt;if event(&quot;Philippe_in_the_clara_bedroom&quot;)&gt;&gt;&gt;&gt;Philippe is here&lt;&lt;endif&gt;&gt;&lt;&lt;if event(&quot;Morann_in_the_clara_bedroom&quot;)&gt;&gt;&gt;&gt;Morann is here&lt;&lt;endif&gt;&gt;&lt;&lt;if event(&quot;Lisa_in_the_lisa_clara_bedroom&quot;)&gt;&gt;&gt;&gt;Lisa is here&lt;&lt;endif&gt;&gt; 
@@ -2158,6 +2206,8 @@ outside~
 [[Garden|Philippe_House][$place = &quot;garden&quot;]]&lt;&lt;if event(&quot;Philippe_in_the_garden&quot;)&gt;&gt;&gt;&gt;Philippe is here&lt;&lt;endif&gt;&gt;&lt;&lt;if event(&quot;Morann_in_the_garden&quot;)&gt;&gt;&gt;&gt;Morann is here&lt;&lt;endif&gt;&gt;&lt;&lt;if event(&quot;Lisa_in_the_garden&quot;)&gt;&gt;&gt;&gt;Lisa is here&lt;&lt;endif&gt;&gt;
 [[Barn|Philippe_House][$place = &quot;barn&quot;]]
 [[Vegetable Garden|Philippe_House][$place = &quot;vegetable_garden&quot;]]&lt;&lt;if event(&quot;Philippe_in_the_vegetable_garden&quot;)&gt;&gt;&gt;&gt;Philippe is here&lt;&lt;endif&gt;&gt;&lt;&lt;if event(&quot;Morann_in_the_vegetable_garden&quot;)&gt;&gt;&gt;&gt;Morann is here&lt;&lt;endif&gt;&gt;&lt;&lt;if event(&quot;Lisa_in_the_vegetable_garden&quot;)&gt;&gt;&gt;&gt;Lisa is here&lt;&lt;endif&gt;&gt;
+&lt;&lt;elseif clara.bondage.isTied()&gt;&gt;
+&lt;&lt;display claraTiedUp&gt;&gt;
 &lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="37" name="FARM_CLARA_BEDROOM" tags="" position="1661,598" size="100,100">&lt;h1&gt;Clara Bedroom&lt;/h1&gt;
 
 [img[src.FARM_CLARA_BEDROOM]]
@@ -2192,7 +2242,7 @@ Double-click this passage to edit it.</tw-passagedata><tw-passagedata pid="43" n
 [img[src.PEE_WC]]
 &lt;&lt;display Choice_Philippe_House&gt;&gt;</tw-passagedata><tw-passagedata pid="44" name="farm_firt_sleep" tags="" position="64,2242" size="100,100">You fall asleep fast. Unaware of what is happening to your body...
 
-[[wake up|Farm_first_WakeUP][clara.body.setFeet(&quot;HOOF&quot;),clara.body.setTail(&quot;COW&quot;),clock.timeSleep(6)]]</tw-passagedata><tw-passagedata pid="45" name="Passage sans titre" tags="" position="776,2239" size="100,100">Tous votre corp ce met à grosir. Vous gagnez en tours de poitrine, vos deviennent plus grausse et vos membre gagne en muscle. 
+[[wake up|Farm_first_WakeUP][clara.body.setFeet(&quot;HOOF&quot;),clara.body.addTail(&quot;COW&quot;),clock.timeSleep(6)]]</tw-passagedata><tw-passagedata pid="45" name="Passage sans titre" tags="" position="776,2239" size="100,100">Tous votre corp ce met à grosir. Vous gagnez en tours de poitrine, vos deviennent plus grausse et vos membre gagne en muscle. 
 
 Vos orelles s&#39;allonge et ce recouvre de poile blanc.
 
@@ -2241,7 +2291,7 @@ Your body has been modified to become that of a hucow.
 &lt;&lt;run Morann.addLove(-1)&gt;&gt;
 &lt;&lt;display Morann_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="57" name="Morann_how_is_Philippe" tags="" position="4202,436" size="100,100">He is a very beautiful man who is serious in his work. He is very attentive. It is a pleasure to live with him.
  
-&lt;&lt;display Morann_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="58" name="Lisa_how_is_Philippe" tags="" position="3623,1167" size="100,100">He can be harsh. But he has good side.
+&lt;&lt;display Morann_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="58" name="Lisa_how_is_Philippe" tags="" position="3559,1171" size="100,100">He can be harsh. But he has good side.
 
 &lt;&lt;display Lisa_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="59" name="Morann_howner_note_sure_get_used" tags="" position="3746,749" size="100,100">I understand, it is not easy for humans to accept this kind of things.
 But don&#39;t worry I will do everything to make your stay as pleasant as possible.
@@ -2251,12 +2301,12 @@ But don&#39;t worry I will do everything to make your stay as pleasant as possib
 &lt;&lt;display Morann_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="61" name="Morann_howner_seems_nice" tags="" position="3972,545" size="100,100">She laughs.
 Well, I didn&#39;t expect so much enthusiasm from a human.
 &lt;&lt;run Morann.addLove(2)&gt;&gt;
-&lt;&lt;display Morann_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="62" name="Lisa_Born_as_Hucow" tags="" position="3736,1168" size="100,100">No, i was basically human like you.
+&lt;&lt;display Morann_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="62" name="Lisa_Born_as_Hucow" tags="" position="3672,1172" size="100,100">No, i was basically human like you.
 It was not easy at first. But I learned to appreciate life as a hucow. And finally I decided to stay here ... with Morann.
 
-&lt;&lt;display Lisa_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="63" name="Lisa_how_long_living_here" tags="" position="3853,1167" size="100,100">It will be soon 3 years.
+&lt;&lt;display Lisa_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="63" name="Lisa_how_long_living_here" tags="" position="3789,1171" size="100,100">It will be soon 3 years.
 
-&lt;&lt;display Lisa_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="64" name="Lisa_close_to_Morann" tags="" position="3973,1158" size="100,100">She blushes.
+&lt;&lt;display Lisa_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="64" name="Lisa_close_to_Morann" tags="" position="3905,1170" size="100,100">She blushes.
 MmmmH yes ... We are really very close.
 &lt;&lt;run Lisa.addSub(1)&gt;&gt;
 &lt;&lt;display Lisa_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="65" name="Passage sans titre 3" tags="" position="4145,1039" size="100,100">Oui je me demendais la même chose au départ, mais il semble que les choses bondage est une tradition incontournable dans ce monde.</tw-passagedata><tw-passagedata pid="66" name="Philippe_first_milking2" tags="" position="759,2860" size="100,100">Inside, the girls undress.
@@ -2401,7 +2451,7 @@ Vous allez dans la cuisine
 
 [img[src.SHOWER]]
 
-&lt;&lt;display Choice_Philippe_House&gt;&gt;</tw-passagedata><tw-passagedata pid="88" name="Philippe_talk_claraShouldWearDirndl" tags="" position="3859,1515" size="100,100">Double-click this passage to edit it.</tw-passagedata><tw-passagedata pid="89" name="Passage sans titre 6" tags="" position="3846,1679" size="100,100">J&#39;avais oublié de te dire, tu dois porter un dirndl</tw-passagedata><tw-passagedata pid="90" name="Passage sans titre 8" tags="" position="3872,1800" size="100,100">$player.name pourquoi tu ne porte pas ton Dirndl ?</tw-passagedata><tw-passagedata pid="91" name="Passage sans titre 9" tags="" position="4003,1808" size="100,100">Clara ta robe !</tw-passagedata><tw-passagedata pid="92" name="Passage sans titre 10" tags="" position="4016,1936" size="100,100">Sa suffi maintenant, je te confisque tes vetement !</tw-passagedata><tw-passagedata pid="93" name="Clara_first_milking_end" tags="" position="909,3124" size="100,100">You hear a clicking sound, the pump doesn&#39;t work anymore and the vibrator has stopped massaging your vulva.
+&lt;&lt;display Choice_Philippe_House&gt;&gt;</tw-passagedata><tw-passagedata pid="88" name="Philippe_talk_claraShouldWearDirndl" tags="" position="4002,1475" size="100,100">Double-click this passage to edit it.</tw-passagedata><tw-passagedata pid="89" name="Passage sans titre 6" tags="" position="3989,1639" size="100,100">J&#39;avais oublié de te dire, tu dois porter un dirndl</tw-passagedata><tw-passagedata pid="90" name="Passage sans titre 8" tags="" position="4015,1760" size="100,100">$player.name pourquoi tu ne porte pas ton Dirndl ?</tw-passagedata><tw-passagedata pid="91" name="Passage sans titre 9" tags="" position="4146,1768" size="100,100">Clara ta robe !</tw-passagedata><tw-passagedata pid="92" name="Passage sans titre 10" tags="" position="4159,1896" size="100,100">Sa suffi maintenant, je te confisque tes vetement !</tw-passagedata><tw-passagedata pid="93" name="Clara_first_milking_end" tags="" position="909,3124" size="100,100">You hear a clicking sound, the pump doesn&#39;t work anymore and the vibrator has stopped massaging your vulva.
 _It&#39;s over, says Philippe as he arrives.
 He passes in front of you, and removes the nipples from your breasts.
 &quot;At the moment, you haven&#39;t produced anything, but don&#39;t worry, it&#39;s normal, it&#39;s your first time. In a few days you will produce as much as Morann and Lisa.&quot; 
@@ -2475,11 +2525,11 @@ You have lunch
 
 You have dinner
 
-&lt;&lt;display Choice_Philippe_House&gt;&gt;</tw-passagedata><tw-passagedata pid="110" name="Morann_Farm" tags="" position="4028,183" size="100,100">[img[src.MORANN_PORTRAIT]]
-[[talk|Morann_talk_Farm]]</tw-passagedata><tw-passagedata pid="111" name="Lisa_Farm" tags="" position="3811,893" size="100,100">[img[src.LISA_PORTRAIT]]
+&lt;&lt;display Choice_Philippe_House&gt;&gt;</tw-passagedata><tw-passagedata pid="110" name="Morann_Farm" tags="" position="3980,184" size="100,100">[img[src.MORANN_PORTRAIT]]
+[[talk|Morann_talk_Farm]]</tw-passagedata><tw-passagedata pid="111" name="Lisa_Farm" tags="" position="3798,902" size="100,100">[img[src.LISA_PORTRAIT]]
 
 [[talk|Lisa_talk_Farm]]</tw-passagedata><tw-passagedata pid="112" name="Philippe_Farm" tags="" position="3596,1463" size="100,100">[img[src.PHIILIPPE_PORTRAIT]]
-[[talk|Philippe_talk_Farm]]</tw-passagedata><tw-passagedata pid="113" name="Morann_talk_Farm_vegetable_garden" tags="" position="4428,298" size="100,100">&lt;&lt;if !visited(&quot;Morann_pretty_place_garden&quot;)&gt;&gt;[[What a pretty place.|Morann_pretty_place_garden]]&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="114" name="Morann_pretty_place_garden" tags="" position="4469,424" size="100,100">It is ? I take care of this garden every day.
+[[talk|Philippe_talk_Farm]]</tw-passagedata><tw-passagedata pid="113" name="Morann_talk_Farm_vegetable_garden" tags="" position="4383,129" size="100,100">&lt;&lt;if !visited(&quot;Morann_pretty_place_garden&quot;)&gt;&gt;[[What a pretty place.|Morann_pretty_place_garden]]&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="114" name="Morann_pretty_place_garden" tags="" position="4424,255" size="100,100">It is ? I take care of this garden every day.
 
 &lt;&lt;display Morann_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="115" name="Character_interruption" tags="" position="2613,354" size="100,100">&lt;&lt;if event(&quot;milkingTime&quot;)&gt;&gt;
 &lt;&lt;display milking_time&gt;&gt;&lt;&lt;set $event_interruption to true&gt;&gt;
@@ -2489,7 +2539,8 @@ You have dinner
 	&lt;&lt;display Philippe_go_to_the_mail&gt;&gt;&lt;&lt;set $event_interruption to true&gt;&gt;
 	&lt;&lt;elseif $place != &quot;clara_bedroom&quot; &amp;&amp; event(&quot;claraIsNaked&quot;) &amp;&amp; event(&quot;Philippe_in_the_&quot;+$place)&gt;&gt;
 	&lt;&lt;display Philippe_claraIsNaked&gt;&gt;&lt;&lt;set $event_interruption to true&gt;&gt;
-&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="116" name="Philippe_House" tags="" position="2201,172" size="100,100">&lt;&lt;display Character_interruption&gt;&gt;
+&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="116" name="Philippe_House" tags="" position="2201,172" size="100,100">&lt;&lt;set $returnPage to passage()&gt;&gt;
+&lt;&lt;display Character_interruption&gt;&gt;
 &lt;&lt;if !$event_interruption&gt;&gt;&lt;&lt;if $place == &quot;barn&quot;&gt;&gt;&lt;&lt;display FARM_BARN&gt;&gt;
 	&lt;&lt;elseif $place == &quot;clara_bedroom&quot;&gt;&gt;&lt;&lt;display FARM_CLARA_BEDROOM&gt;&gt;
 	&lt;&lt;elseif $place == &quot;kitchen&quot;&gt;&gt;&lt;&lt;display FARM_KITCHEN&gt;&gt;
@@ -2565,16 +2616,17 @@ It feels like your heart is being ripped out. It takes about a minute before you
 It looks like a rope, nothing abnormal. But for some reason you don&#39;t know there is something special about this rope.
 
 [[Leave the rope|Philippe_House]] 
-[[Taking the rope|MORANN_BEDROOM_ROPE_TOOK]]
-
-(Do nothing for the moment)</tw-passagedata><tw-passagedata pid="127" name="MORANN_BEDROOM_ROPE_TOOK" tags="" position="2563,851" size="100,100">When you bring your hand closer to the rope, it seems to move by itself and is attracted to your hand.
+[[Taking the rope|MORANN_BEDROOM_ROPE_TOOK]]</tw-passagedata><tw-passagedata pid="127" name="MORANN_BEDROOM_ROPE_TOOK" tags="" position="2563,851" size="100,100">When you bring your hand closer to the rope, it seems to move by itself and is attracted to your hand.
 
 You grab the rope.
 &quot;Could it be a magic rope?&quot;
 
 (Rope added in inventory)
 
-[[Morann Bedroom|Philippe_House]]</tw-passagedata><tw-passagedata pid="128" name="Morann_Philippe_make_love_in_philippe_bedroom_spy_1" tags="" position="2761,1534" size="100,100">You see Philippe in doggy style position with a woman. Pink hair goes down the back of the young woman and you recognize Morann&#39;s back.
+[[Morann Bedroom|Philippe_House]] 
+
+
+&lt;&lt;run clara.inventory.addItem(&quot;rope&quot;,1)&gt;&gt;</tw-passagedata><tw-passagedata pid="128" name="Morann_Philippe_make_love_in_philippe_bedroom_spy_1" tags="" position="2761,1534" size="100,100">You see Philippe in doggy style position with a woman. Pink hair goes down the back of the young woman and you recognize Morann&#39;s back.
 Your vision leaves no doubt about the nature of what they are doing.
 
 [img[src.FUCKING_THROUGH_DOOR]]
@@ -2813,7 +2865,7 @@ You&#39;re thinking... Loic would have made you drink the potion without telling
 
 &lt;&lt;display Philippe_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="170" name="Philippe_talk_Farm_borrow_phone" tags="" position="3432,1732" size="100,100">Of course, I have a landline phone in the living room. Use it whenever you want.
 
-&lt;&lt;display Philippe_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="171" name="Philippe_talk_Farm_beautiful_cows" tags="" position="3547,1740" size="100,100">Thank you, I always took care of them and made sure they were healthy. I would do the same with you.
+&lt;&lt;display Philippe_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="171" name="Philippe_talk_Farm_beautiful_cows" tags="" position="3544,1733" size="100,100">Thank you, I always took care of them and made sure they were healthy. I would do the same with you.
 &lt;&lt;run Philippe.addLove(1)&gt;&gt;
 &lt;&lt;display Philippe_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="172" name="phone_calling_loic_hucow_tf" tags="" position="2460,1408" size="100,100">_ Of course it&#39;s me! Who else do you want it to be?
 _ You didn&#39;t tell me.
@@ -2824,7 +2876,59 @@ _ Huuurgh !
 Lisa is from here for a short time in comparison.
 Morann and I have hosted many human girls for their vacations here. But Lisa is the only one who wanted to stay with us.
 &lt;&lt;run Philippe.addLove(1)&gt;&gt;
-&lt;&lt;display Philippe_talk_Farm&gt;&gt;</tw-passagedata></tw-storydata>
+&lt;&lt;display Philippe_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="174" name="Morann_talk_farm_found_rope" tags="" position="4325,436" size="100,100">&lt;&lt;run Morann.addLove(1)&gt;&gt;&lt;&lt;run Morann.addSub(1)&gt;&gt;
+Morann Smile
+_ Hey ! it&#39;s my rope, give it back. Said Morann in an ironic tone.
+_ Nope.
+_ Nooooo
+
+
+
+&lt;&lt;display Morann_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="175" name="Morann_talk_Farm_tie_rope" tags="" position="4444,431" size="100,100">&lt;&lt;run Morann.addLove(1)&gt;&gt;&lt;&lt;run Morann.addSub(1)&gt;&gt;
+Girl! I&#39;d love to!
+
+
+&lt;&lt;display Morann_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="176" name="Lisa_talk_farm_ask_tie_rope" tags="" position="4025,1170" size="100,100">&lt;&lt;run Lisa.addLove(1)&gt;&gt;&lt;&lt;run Lisa.addSub(1)&gt;&gt;
+Lisa blushed.
+_ Don&#39;t say anything stupid.
+
+&lt;&lt;display Lisa_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="177" name="Philippe_talk_farm_ask_tie_rope" tags="" position="3791,1735" size="100,100">&lt;if visited(passage()===1)&gt;&gt;&lt;&lt;run Philippe.addLove(1)&gt;&gt;&lt;&lt;run Philippe.addSub(-1)&gt;&gt;&lt;&lt;endif&gt;&gt;
+You show the rope to Philippe.
+Philippe looks at your rope. 
+He looks at you, amazed by your request.
+He grabs your rope and ties you up.
+_ No he say, and [[he leaves you.|$returnPage]]
+
+
+&lt;&lt;run clara.bondage.toTieUp(&quot;rope&quot;)&gt;&gt;</tw-passagedata><tw-passagedata pid="178" name="claraTiedUp" tags="" position="2916.199951171875,393" size="100,100">You can&#39;t move, you are tied up.
+
+[img[src.BONDAGE_ROPE]]
+
+[[Try to free yourself|Clara_try_free_herself]]</tw-passagedata><tw-passagedata pid="179" name="Clara_try_free_herself" tags="" position="3062.199951171875,413" size="100,100">You are wiggling in all directions. It&#39;s not easy, but you end up freeing yourself from your bonds.
+
+[[return|$returnPage][clara.bondage.untie()]]</tw-passagedata><tw-passagedata pid="180" name="Philippe_trie_tie_rope" tags="" position="3725,1864" size="100,100">&lt;&lt;run Philippe.addLove(1)&gt;&gt;&lt;&lt;run Philippe.addSub(-1)&gt;&gt;
+You try to attach Philippe but it is a complete failure.
+He laughs.
+_ girl, what are you trying to do ?
+He grab you and tie you with your own rope.
+
+&lt;&lt;run clara.bondage.toTieUp(&quot;rope&quot;)&gt;&gt;
+
+[[return|$returnPage]]</tw-passagedata><tw-passagedata pid="181" name="Lisa_trie_tie_rope" tags="" position="4155,1164" size="100,100">&lt;&lt;if visited(passage()===1)&gt;&gt;&lt;&lt;run Lisa.addLove(1)&gt;&gt;&lt;&lt;run Lisa.addSub(-1)&gt;&gt;&lt;&lt;endif&gt;&gt;
+You try to attach Lisa but it is a complete failure.
+_ Huh ? You wan&#39;t to play ?
+She ties you up and plays with you for a while and after a while she leave you.
+
+[[return|$returnPage]]
+
+&lt;&lt;run clara.bondage.toTieUp(&quot;rope&quot;)&gt;&gt;</tw-passagedata><tw-passagedata pid="182" name="Morann_trie_tie_rope" tags="" position="4571,424" size="100,100">&lt;if visited(passage()===1)&gt;&gt;&lt;&lt;run Lisa.addLove(1)&gt;&gt;&lt;&lt;run Lisa.addSub(1)&gt;&gt;&lt;&lt;endif&gt;&gt;
+
+Attaching Morann is incredibly simple.
+She clearly appears to be detached.
+
+You play with her for a while and then release her.
+
+&lt;&lt;display Morann_talk_Farm&gt;&gt;</tw-passagedata></tw-storydata>
 	<script id="script-sugarcube" type="text/javascript">
 	/*! SugarCube JS */
 	if(document.documentElement.getAttribute("data-init")==="loading"){!function(window,document,jQuery,undefined){"use strict";function _classCallCheck(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function _toConsumableArray(e){if(Array.isArray(e)){for(var t=0,r=Array(e.length);t<e.length;t++)r[t]=e[t];return r}return Array.from(e)}var _createClass=function(){function e(e,t){for(var r=0;r<t.length;r++){var n=t[r];n.enumerable=n.enumerable||!1,n.configurable=!0,"value"in n&&(n.writable=!0),Object.defineProperty(e,n.key,n)}}return function(t,r,n){return r&&e(t.prototype,r),n&&e(t,n),t}}(),_slicedToArray=function(){function e(e,t){var r=[],n=!0,a=!1,i=undefined;try{for(var o,s=e[Symbol.iterator]();!(n=(o=s.next()).done)&&(r.push(o.value),!t||r.length!==t);n=!0);}catch(e){a=!0,i=e}finally{try{!n&&s.return&&s.return()}finally{if(a)throw i}}return r}return function(t,r){if(Array.isArray(t))return t;if(Symbol.iterator in Object(t))return e(t,r);throw new TypeError("Invalid attempt to destructure non-iterable instance")}}(),_typeof="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e},errorPrologRegExp=/^(?:(?:uncaught\s+(?:exception:\s+)?)?\w*(?:error|exception|_err):\s+)+/i,Alert=function(){function e(e,t,r,n){var a="fatal"===e,i="Apologies! "+(a?"A fatal":"An")+" error has occurred.";i+=a?" Aborting.":" You may be able to continue, but some parts may not work properly.",null==t&&null==r||(i+="\n\nError",null!=t&&(i+=" ["+t+"]"),i+=null!=r?": "+r.replace(errorPrologRegExp,"")+".":": unknown error."),"object"===(void 0===n?"undefined":_typeof(n))&&n.stack&&(i+="\n\nStack Trace:\n"+n.stack),window.alert(i)}function t(t,r,n){e(null,t,r,n)}function r(t,r,n){e("fatal",t,r,n)}return function(e){window.onerror=function(n,a,i,o,s){"complete"===document.readyState?t(null,n,s):(r(null,n,s),window.onerror=e,"function"==typeof window.onerror&&window.onerror.apply(this,arguments))}}(window.onerror),Object.freeze(Object.defineProperties({},{error:{value:t},fatal:{value:r}}))}(),Patterns=function(){var e=function(){var e=new Map([[" ","\\u0020"],["\f","\\f"],["\n","\\n"],["\r","\\r"],["\t","\\t"],["\v","\\v"],[" ","\\u00a0"],[" ","\\u1680"],["᠎","\\u180e"],[" ","\\u2000"],[" ","\\u2001"],[" ","\\u2002"],[" ","\\u2003"],[" ","\\u2004"],[" ","\\u2005"],[" ","\\u2006"],[" ","\\u2007"],[" ","\\u2008"],[" ","\\u2009"],[" ","\\u200a"],["\u2028","\\u2028"],["\u2029","\\u2029"],[" ","\\u202f"],[" ","\\u205f"],["　","\\u3000"],["\ufeff","\\ufeff"]]),t=/^\s$/,r="";return e.forEach(function(e,n){t.test(n)||(r+=e)}),r?"[\\s"+r+"]":"\\s"}(),t="\\s"===e?"\\S":e.replace(/^\[/,"[^"),r="[0-9A-Z_a-z\\-\\u00c0-\\u00d6\\u00d8-\\u00f6\\u00f8-\\u00ff\\u0150\\u0170\\u0151\\u0171]",n=r.replace("\\-",""),a=function(){return"("+r+"+)\\(([^\\)\\|\\n]+)\\):|("+r+"+):([^;\\|\\n]+);|((?:\\."+r+"+)+);|((?:#"+r+"+)+);"}();return Object.freeze({space:e,spaceNoTerminator:"[\\u0020\\f\\t\\v\\u00a0\\u1680\\u180e\\u2000-\\u200a\\u202f\\u205f\\u3000\\ufeff]",lineTerminator:"[\\n\\r\\u2028\\u2029]",notSpace:t,anyChar:"(?:.|[\\n\\r\\u2028\\u2029])",anyLetter:r,anyLetterStrict:n,identifierFirstChar:"[$A-Z_a-z]",identifierNextChar:"[$0-9A-Z_a-z]",identifier:"[$A-Z_a-z][$0-9A-Z_a-z]*",variableSigil:"[$_]",variable:"[$_][$A-Z_a-z][$0-9A-Z_a-z]*",macroName:"[A-Za-z][\\w-]*|[=-]",templateName:"[A-Za-z][\\w-]*",cssImage:"\\[[<>]?[Ii][Mm][Gg]\\[(?:\\s|\\S)*?\\]\\]+",inlineCss:a,url:"(?:file|https?|mailto|ftp|javascript|irc|news|data):[^\\s'\"]+"})}();!function(){!function(e){if(e&&e.prototype&&null==e.prototype.firstElementChild){var t=Node.ELEMENT_NODE;Object.defineProperty(e.prototype,"firstElementChild",{get:function(){for(var e=this.childNodes,r=0;r<e.length;++r){var n=e[r];if(n.nodeType===t)return n}return null}})}}(window.Node||window.Element)}(),function(){function e(e,t){var r=Number.parseInt(e,10)||0;if(r<1)return"";var n=void 0===t?"":String(t);for(""===n&&(n=" ");n.length<r;){var a=n.length,i=r-a;n+=a>i?n.slice(0,i):n}return n.length>r&&(n=n.slice(0,r)),n}var t=function(){function e(e,n){var a=String(e);if(!a)return a;switch(n){case"start":return t.test(a)?a.replace(t,""):a;case"end":return r.test(a)?a.replace(r,""):a;default:throw new Error('_trimString called with incorrect where parameter value: "'+n+'"')}}var t=new RegExp("^"+Patterns.space+Patterns.space+"*"),r=new RegExp(""+Patterns.space+Patterns.space+"*$");return e}();Array.prototype.flat||Object.defineProperty(Array.prototype,"flat",{configurable:!0,writable:!0,value:function(){function e(){if(null==this)throw new TypeError("Array.prototype.flat called on null or undefined");var t=0===arguments.length?1:Number(arguments[0])||0;return t<1?Array.prototype.slice.call(this):Array.prototype.reduce.call(this,function(r,n){return n instanceof Array?r.push.apply(r,_toConsumableArray(e.call(n,t-1))):r.push(n),r},[])}return e}()}),Array.prototype.flatMap||Object.defineProperty(Array.prototype,"flatMap",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.flatMap called on null or undefined");return Array.prototype.map.apply(this,arguments).flat()}}),Array.prototype.includes||Object.defineProperty(Array.prototype,"includes",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.includes called on null or undefined");if(0===arguments.length)return!1;var e=this.length>>>0;if(0===e)return!1;var t=arguments[0],r=Number(arguments[1])||0;for(r<0&&(r=Math.max(0,e+r));r<e;++r){var n=this[r];if(n===t||n!==n&&t!==t)return!0}return!1}}),Object.entries||Object.defineProperty(Object,"entries",{configurable:!0,writable:!0,value:function(e){if("object"!==(void 0===e?"undefined":_typeof(e))||null===e)throw new TypeError("Object.entries object parameter must be an object");return Object.keys(e).map(function(t){return[t,e[t]]})}}),Object.fromEntries||Object.defineProperty(Object,"fromEntries",{configurable:!0,writable:!0,value:function(e){return Array.from(e).reduce(function(e,t){if(Object(t)!==t)throw new TypeError("Object.fromEntries iterable parameter must yield objects");return t[0]in e?Object.defineProperty(e,t[0],{configurable:!0,enumerable:!0,writable:!0,value:t[1]}):e[t[0]]=t[1],e},{})}}),Object.getOwnPropertyDescriptors||Object.defineProperty(Object,"getOwnPropertyDescriptors",{configurable:!0,writable:!0,value:function(e){if(null==e)throw new TypeError("Object.getOwnPropertyDescriptors object parameter is null or undefined");var t=Object(e);return Reflect.ownKeys(t).reduce(function(e,r){var n=Object.getOwnPropertyDescriptor(t,r);return void 0!==n&&(r in e?Object.defineProperty(e,r,{configurable:!0,enumerable:!0,writable:!0,value:n}):e[r]=n),e},{})}}),Object.values||Object.defineProperty(Object,"values",{configurable:!0,writable:!0,value:function(e){if("object"!==(void 0===e?"undefined":_typeof(e))||null===e)throw new TypeError("Object.values object parameter must be an object");return Object.keys(e).map(function(t){return e[t]})}}),String.prototype.padStart||Object.defineProperty(String.prototype,"padStart",{configurable:!0,writable:!0,value:function(t,r){if(null==this)throw new TypeError("String.prototype.padStart called on null or undefined");var n=String(this),a=n.length,i=Number.parseInt(t,10);return i<=a?n:e(i-a,r)+n}}),String.prototype.padEnd||Object.defineProperty(String.prototype,"padEnd",{configurable:!0,writable:!0,value:function(t,r){if(null==this)throw new TypeError("String.prototype.padEnd called on null or undefined");var n=String(this),a=n.length,i=Number.parseInt(t,10);return i<=a?n:n+e(i-a,r)}}),String.prototype.trimStart||Object.defineProperty(String.prototype,"trimStart",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.trimStart called on null or undefined");return t(this,"start")}}),String.prototype.trimLeft||Object.defineProperty(String.prototype,"trimLeft",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.trimLeft called on null or undefined");return t(this,"start")}}),String.prototype.trimEnd||Object.defineProperty(String.prototype,"trimEnd",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.trimEnd called on null or undefined");return t(this,"end")}}),String.prototype.trimRight||Object.defineProperty(String.prototype,"trimRight",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.trimRight called on null or undefined");return t(this,"end")}})}(),function(){function _random(){var e=void 0,t=void 0;switch(arguments.length){case 0:throw new Error("_random called with insufficient parameters");case 1:e=0,t=arguments[0];break;default:e=arguments[0],t=arguments[1]}if(e>t){var r=[t,e];e=r[0],t=r[1]}return Math.floor(_nativeMathRandom()*(t-e+1))+e}function _randomIndex(e,t){var r=void 0,n=void 0;switch(t.length){case 1:r=0,n=e-1;break;case 2:r=0,n=Math.trunc(t[1]);break;default:r=Math.trunc(t[1]),n=Math.trunc(t[2])}return Number.isNaN(r)?r=0:!Number.isFinite(r)||r>=e?r=e-1:r<0&&(r=e+r)<0&&(r=0),Number.isNaN(n)?n=0:!Number.isFinite(n)||n>=e?n=e-1:n<0&&(n=e+n)<0&&(n=e-1),_random(r,n)}function _getCodePointStartAndEnd(e,t){var r=e.charCodeAt(t);if(Number.isNaN(r))return{char:"",start:-1,end:-1};if(r<55296||r>57343)return{char:e.charAt(t),start:t,end:t};if(r>=55296&&r<=56319){var n=t+1;if(n>=e.length)throw new Error("high surrogate without trailing low surrogate");var a=e.charCodeAt(n);if(a<56320||a>57343)throw new Error("high surrogate without trailing low surrogate");return{char:e.charAt(t)+e.charAt(n),start:t,end:n}}if(0===t)throw new Error("low surrogate without leading high surrogate");var i=t-1,o=e.charCodeAt(i);if(o<55296||o>56319)throw new Error("low surrogate without leading high surrogate");return{char:e.charAt(i)+e.charAt(t),start:i,end:t}}var _nativeMathRandom=Math.random;Object.defineProperty(Array,"random",{configurable:!0,writable:!0,value:function(e){if("object"!==(void 0===e?"undefined":_typeof(e))||null===e||!Object.prototype.hasOwnProperty.call(e,"length"))throw new TypeError("Array.random array parameter must be an array or array-lke object");var t=e.length>>>0;if(0!==t){return e[0===arguments.length?_random(0,t-1):_randomIndex(t,Array.prototype.slice.call(arguments,1))]}}}),Object.defineProperty(Array.prototype,"concatUnique",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.concatUnique called on null or undefined");var e=Array.from(this);if(0===arguments.length)return e;var t=Array.prototype.reduce.call(arguments,function(e,t){return e.concat(t)},[]),r=t.length;if(0===r)return e;for(var n=Array.prototype.indexOf,a=Array.prototype.push,i=0;i<r;++i){var o=t[i];-1===n.call(e,o)&&a.call(e,o)}return e}}),Object.defineProperty(Array.prototype,"count",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.count called on null or undefined");for(var e=Array.prototype.indexOf,t=arguments[0],r=Number(arguments[1])||0,n=0;-1!==(r=e.call(this,t,r));)++n,++r;return n}}),Object.defineProperty(Array.prototype,"delete",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.delete called on null or undefined");if(0===arguments.length)return[];var e=this.length>>>0;if(0===e)return[];for(var t=Array.prototype.concat.apply([],arguments),r=t.length,n=[],a=0;a<e;++a)for(var i=this[a],o=0;o<r;++o){var s=t[o];if(i===s||i!==i&&s!==s){n.push(a);break}}for(var u=[],l=0,c=n.length;l<c;++l)u[l]=this[n[l]];for(var d=Array.prototype.splice,f=n.length-1;f>=0;--f)d.call(this,n[f],1);return u}}),Object.defineProperty(Array.prototype,"deleteAt",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.deleteAt called on null or undefined");if(0===arguments.length)return[];var e=this.length>>>0;if(0===e)return[];for(var t=Array.prototype.splice,r=[].concat(_toConsumableArray(new Set(Array.prototype.concat.apply([],arguments).map(function(t){return t<0?Math.max(0,e+t):t})).values())),n=[].concat(_toConsumableArray(r)).sort(function(e,t){return t-e}),a=[],i=0,o=r.length;i<o;++i)a[i]=this[r[i]];for(var s=0,u=n.length;s<u;++s)t.call(this,n[s],1);return a}}),Object.defineProperty(Array.prototype,"deleteWith",{configurable:!0,writable:!0,value:function(e,t){if(null==this)throw new TypeError("Array.prototype.deleteWith called on null or undefined");if("function"!=typeof e)throw new Error("Array.prototype.deleteWith predicate parameter must be a function");var r=this.length>>>0;if(0===r)return[];for(var n=Array.prototype.splice,a=[],i=[],o=0;o<r;++o)e.call(t,this[o],o,this)&&(i.push(this[o]),a.push(o));for(var s=a.length-1;s>=0;--s)n.call(this,a[s],1);return i}}),Object.defineProperty(Array.prototype,"first",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.first called on null or undefined");if(0!=this.length>>>0)return this[0]}}),Object.defineProperty(Array.prototype,"includesAll",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.includesAll called on null or undefined");if(1===arguments.length)return Array.isArray(arguments[0])?Array.prototype.includesAll.apply(this,arguments[0]):Array.prototype.includes.apply(this,arguments);for(var e=0,t=arguments.length;e<t;++e)if(!Array.prototype.some.call(this,function(e){return e===this.val||e!==e&&this.val!==this.val},{val:arguments[e]}))return!1;return!0}}),Object.defineProperty(Array.prototype,"includesAny",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.includesAny called on null or undefined");if(1===arguments.length)return Array.isArray(arguments[0])?Array.prototype.includesAny.apply(this,arguments[0]):Array.prototype.includes.apply(this,arguments);for(var e=0,t=arguments.length;e<t;++e)if(Array.prototype.some.call(this,function(e){return e===this.val||e!==e&&this.val!==this.val},{val:arguments[e]}))return!0;return!1}}),Object.defineProperty(Array.prototype,"last",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.last called on null or undefined");var e=this.length>>>0;if(0!==e)return this[e-1]}}),Object.defineProperty(Array.prototype,"pluck",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.pluck called on null or undefined");var e=this.length>>>0;if(0!==e){var t=0===arguments.length?_random(0,e-1):_randomIndex(e,[].concat(Array.prototype.slice.call(arguments)));return Array.prototype.splice.call(this,t,1)[0]}}}),Object.defineProperty(Array.prototype,"pluckMany",{configurable:!0,writable:!0,value:function(e){if(null==this)throw new TypeError("Array.prototype.pluckMany called on null or undefined");var t=this.length>>>0;if(0===t)return[];var r=Math.trunc(e);if(!Number.isInteger(r))throw new Error("Array.prototype.pluckMany want parameter must be an integer");if(r<1)return[];r>t&&(r=t);var n=Array.prototype.splice,a=[],i=t-1;do{a.push(n.call(this,_random(0,i--),1)[0])}while(a.length<r);return a}}),Object.defineProperty(Array.prototype,"pushUnique",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.pushUnique called on null or undefined");var e=arguments.length;if(0===e)return this.length>>>0;for(var t=Array.prototype.indexOf,r=Array.prototype.push,n=0;n<e;++n){var a=arguments[n];-1===t.call(this,a)&&r.call(this,a)}return this.length>>>0}}),Object.defineProperty(Array.prototype,"random",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.random called on null or undefined");var e=this.length>>>0;if(0!==e){return this[0===arguments.length?_random(0,e-1):_randomIndex(e,[].concat(Array.prototype.slice.call(arguments)))]}}}),Object.defineProperty(Array.prototype,"randomMany",{configurable:!0,writable:!0,value:function(e){if(null==this)throw new TypeError("Array.prototype.randomMany called on null or undefined");var t=this.length>>>0;if(0===t)return[];var r=Math.trunc(e);if(!Number.isInteger(r))throw new Error("Array.prototype.randomMany want parameter must be an integer");if(r<1)return[];r>t&&(r=t);var n=new Map,a=[],i=t-1;do{var o=void 0;do{o=_random(0,i)}while(n.has(o));n.set(o,!0),a.push(this[o])}while(a.length<r);return a}}),Object.defineProperty(Array.prototype,"shuffle",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.shuffle called on null or undefined");var e=this.length>>>0;if(0===e)return this;for(var t=e-1;t>0;--t){var r=Math.floor(_nativeMathRandom()*(t+1));if(t!==r){var n=this[t];this[t]=this[r],this[r]=n}}return this}}),Object.defineProperty(Array.prototype,"unshiftUnique",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.unshiftUnique called on null or undefined");var e=arguments.length;if(0===e)return this.length>>>0;for(var t=Array.prototype.indexOf,r=Array.prototype.unshift,n=0;n<e;++n){var a=arguments[n];-1===t.call(this,a)&&r.call(this,a)}return this.length>>>0}}),Object.defineProperty(Function.prototype,"partial",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Function.prototype.partial called on null or undefined");var e=Array.prototype.slice,t=this,r=e.call(arguments,0);return function(){for(var n=[],a=0,i=0;i<r.length;++i)n.push(r[i]===undefined?arguments[a++]:r[i]);return t.apply(this,n.concat(e.call(arguments,a)))}}}),Object.defineProperty(Math,"clamp",{configurable:!0,writable:!0,value:function(e,t,r){var n=Number(e);return Number.isNaN(n)?NaN:n.clamp(t,r)}}),Object.defineProperty(Math,"easeInOut",{configurable:!0,writable:!0,value:function(e){return 1-(Math.cos(Number(e)*Math.PI)+1)/2}}),Object.defineProperty(Number.prototype,"clamp",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Number.prototype.clamp called on null or undefined");if(2!==arguments.length)throw new Error("Number.prototype.clamp called with an incorrect number of parameters");var e=Number(arguments[0]),t=Number(arguments[1]);if(e>t){var r=[t,e];e=r[0],t=r[1]}return Math.min(Math.max(this,e),t)}}),RegExp.escape||function(){var e=/[\\^$*+?.()|[\]{}]/g,t=new RegExp(e.source);Object.defineProperty(RegExp,"escape",{configurable:!0,writable:!0,value:function(r){var n=String(r);return n&&t.test(n)?n.replace(e,"\\$&"):n}})}(),function(){var e=/{(\d+)(?:,([+-]?\d+))?}/g,t=new RegExp(e.source);Object.defineProperty(String,"format",{configurable:!0,writable:!0,value:function(r){function n(e,t,r){if(!t)return e;var n=Math.abs(t)-e.length;if(n<1)return e;var a=String(r).repeat(n);return t<0?e+a:a+e}if(arguments.length<2)return 0===arguments.length?"":r;var a=2===arguments.length&&Array.isArray(arguments[1])?[].concat(_toConsumableArray(arguments[1])):Array.prototype.slice.call(arguments,1);return 0===a.length?r:t.test(r)?(e.lastIndex=0,r.replace(e,function(e,t,r){var i=a[t];if(null==i)return"";for(;"function"==typeof i;)i=i();switch(void 0===i?"undefined":_typeof(i)){case"string":break;case"object":i=JSON.stringify(i);break;default:i=String(i)}return n(i,r?Number.parseInt(r,10):0," ")})):r}})}(),Object.defineProperty(String.prototype,"contains",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.contains called on null or undefined");return-1!==String.prototype.indexOf.apply(this,arguments)}}),Object.defineProperty(String.prototype,"count",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.count called on null or undefined");var e=String(arguments[0]||"");if(""===e)return 0;for(var t=String.prototype.indexOf,r=e.length,n=Number(arguments[1])||0,a=0;-1!==(n=t.call(this,e,n));)++a,n+=r;return a}}),Object.defineProperty(String.prototype,"first",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.first called on null or undefined");return _getCodePointStartAndEnd(String(this),0).char}}),Object.defineProperty(String.prototype,"last",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.last called on null or undefined");var e=String(this);return _getCodePointStartAndEnd(e,e.length-1).char}}),Object.defineProperty(String.prototype,"splice",{configurable:!0,writable:!0,value:function(e,t,r){if(null==this)throw new TypeError("String.prototype.splice called on null or undefined");var n=this.length>>>0;if(0===n)return"";var a=Number(e);Number.isSafeInteger(a)?a<0&&(a+=n)<0&&(a=0):a=0,a>n&&(a=n);var i=Number(t);(!Number.isSafeInteger(i)||i<0)&&(i=0);var o=this.slice(0,a);return void 0!==r&&(o+=r),a+i<n&&(o+=this.slice(a+i)),o}}),Object.defineProperty(String.prototype,"splitOrEmpty",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.splitOrEmpty called on null or undefined");return""===String(this)?[]:String.prototype.split.apply(this,arguments)}}),Object.defineProperty(String.prototype,"toLocaleUpperFirst",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.toLocaleUpperFirst called on null or undefined");var e=String(this),t=_getCodePointStartAndEnd(e,0),r=t.char,n=t.end;return-1===n?"":r.toLocaleUpperCase()+e.slice(n+1)}}),Object.defineProperty(String.prototype,"toUpperFirst",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.toUpperFirst called on null or undefined");var e=String(this),t=_getCodePointStartAndEnd(e,0),r=t.char,n=t.end;return-1===n?"":r.toUpperCase()+e.slice(n+1)}}),Object.defineProperty(Date.prototype,"toJSON",{configurable:!0,writable:!0,value:function(){return["(revive:date)",this.toISOString()]}}),Object.defineProperty(Function.prototype,"toJSON",{configurable:!0,writable:!0,value:function(){return["(revive:eval)","("+this.toString()+")"]}}),Object.defineProperty(Map.prototype,"toJSON",{configurable:!0,writable:!0,value:function(){return["(revive:map)",[].concat(_toConsumableArray(this))]}}),Object.defineProperty(RegExp.prototype,"toJSON",{configurable:!0,writable:!0,value:function(){return["(revive:eval)",this.toString()]}}),Object.defineProperty(Set.prototype,"toJSON",{configurable:!0,writable:!0,value:function(){return["(revive:set)",[].concat(_toConsumableArray(this))]}}),Object.defineProperty(JSON,"reviveWrapper",{configurable:!0,writable:!0,value:function(e,t){if("string"!=typeof e)throw new TypeError("JSON.reviveWrapper code parameter must be a string");return["(revive:eval)",[e,t]]}}),Object.defineProperty(JSON,"_real_parse",{value:JSON.parse}),Object.defineProperty(JSON,"parse",{configurable:!0,writable:!0,value:function value(text,reviver){return JSON._real_parse(text,function(key,val){var value=val;if(Array.isArray(value)&&2===value.length)switch(value[0]){case"(revive:set)":value=new Set(value[1]);break;case"(revive:map)":value=new Map(value[1]);break;case"(revive:date)":value=new Date(value[1]);break;case"(revive:eval)":try{if(Array.isArray(value[1])){var $ReviveData$=value[1][1];value=eval(value[1][0])}else value=eval(value[1])}catch(e){}}else if("string"==typeof value&&"@@revive@@"===value.slice(0,10))try{value=eval(value.slice(10))}catch(e){}if("function"==typeof reviver)try{value=reviver(key,value)}catch(e){}return value})}}),Object.defineProperty(Array.prototype,"contains",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.contains called on null or undefined");return Array.prototype.includes.apply(this,arguments)}}),Object.defineProperty(Array.prototype,"containsAll",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.containsAll called on null or undefined");return Array.prototype.includesAll.apply(this,arguments)}}),Object.defineProperty(Array.prototype,"containsAny",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.containsAny called on null or undefined");return Array.prototype.includesAny.apply(this,arguments)}}),Object.defineProperty(Array.prototype,"flatten",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.flatten called on null or undefined");return Array.prototype.flat.call(this,1/0)}}),Object.defineProperty(String.prototype,"readBracketedList",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.readBracketedList called on null or undefined");for(var e=new RegExp("(?:\\[\\[((?:\\s|\\S)*?)\\]\\])|([^\"'\\s]\\S*)","gm"),t=[],r=void 0;null!==(r=e.exec(this));)r[1]?t.push(r[1]):r[2]&&t.push(r[2]);return t}})}();var Browser=function(){var e=navigator.userAgent.toLowerCase(),t=e.includes("windows phone"),r=Object.freeze({Android:!t&&e.includes("android"),BlackBerry:/blackberry|bb10/.test(e),iOS:!t&&/ip(?:hone|ad|od)/.test(e),Opera:!t&&("object"===_typeof(window.operamini)||e.includes("opera mini")),Windows:t||/iemobile|wpdesktop/.test(e),any:function(){return r.Android||r.BlackBerry||r.iOS||r.Opera||r.Windows}}),n=!r.Windows&&!/khtml|trident|edge/.test(e)&&e.includes("gecko"),a=!e.includes("opera")&&/msie|trident/.test(e),i=a?function(){var t=/(?:msie\s+|rv:)(\d+\.\d)/.exec(e);return t?Number(t[1]):0}():null,o=e.includes("opera")||e.includes(" opr/"),s=o?function(){var t=new RegExp((/khtml|chrome/.test(e)?"opr":"version")+"\\/(\\d+\\.\\d+)"),r=t.exec(e);return r?Number(r[1]):0}():null,u=e.includes("vivaldi");return Object.freeze({userAgent:e,isMobile:r,isGecko:n,isIE:a,ieVersion:i,isOpera:o,operaVersion:s,isVivaldi:u})}(),Has=function(){var e=function(){try{return"function"==typeof document.createElement("audio").canPlayType}catch(e){}return!1}(),t=e&&function(){try{var e=document.createElement("audio").play();return e.catch(function(){}),e instanceof Promise}catch(e){}return!1}(),r=function(){try{return"Blob"in window&&"File"in window&&"FileList"in window&&"FileReader"in window&&!Browser.isMobile.any()&&(!Browser.isOpera||Browser.operaVersion>=15)}catch(e){}return!1}(),n=function(){try{return"geolocation"in navigator&&"function"==typeof navigator.geolocation.getCurrentPosition&&"function"==typeof navigator.geolocation.watchPosition}catch(e){}return!1}(),a=function(){try{return"MutationObserver"in window&&"function"==typeof window.MutationObserver}catch(e){}return!1}(),i=function(){try{return"performance"in window&&"function"==typeof window.performance.now}catch(e){}return!1}(),o=function(){try{return"ontouchstart"in window||!!window.DocumentTouch&&document instanceof window.DocumentTouch||!!navigator.maxTouchPoints||!!navigator.msMaxTouchPoints}catch(e){}return!1}(),s=function(){try{for(var e=new Map([["transition","transitionend"],["MSTransition","msTransitionEnd"],["WebkitTransition","webkitTransitionEnd"],["MozTransition","transitionend"]]),t=[].concat(_toConsumableArray(e.keys())),r=document.createElement("div"),n=0;n<t.length;++n)if(r.style[t[n]]!==undefined)return e.get(t[n])}catch(e){}return!1}();return Object.freeze({audio:e,audioPromise:t,fileAPI:r,geolocation:n,mutationObserver:a,performance:i,touch:o,transitionEndEvent:s})}(),Visibility=function(){function e(){return Boolean(r&&document[r.hiddenProperty])}function t(){return r&&document[r.stateProperty]||"visible"}var r=function(){try{return Object.freeze([{hiddenProperty:"hidden",stateProperty:"visibilityState",changeEvent:"visibilitychange"},{hiddenProperty:"webkitHidden",stateProperty:"webkitVisibilityState",changeEvent:"webkitvisibilitychange"},{hiddenProperty:"mozHidden",stateProperty:"mozVisibilityState",changeEvent:"mozvisibilitychange"},{hiddenProperty:"msHidden",stateProperty:"msVisibilityState",changeEvent:"msvisibilitychange"}].find(function(e){return e.hiddenProperty in document}))}catch(e){}return null}();return Object.freeze(Object.defineProperties({},{isHidden:{value:e},state:{value:t},hiddenProperty:{value:r.hiddenProperty},stateProperty:{value:r.stateProperty},changeEvent:{value:r.changeEvent}}))}(),_ref3=function(){function e(t){if("object"!==(void 0===t?"undefined":_typeof(t))||null===t)return t;if(t instanceof String)return String(t);if(t instanceof Number)return Number(t);if(t instanceof Boolean)return Boolean(t);if("function"==typeof t.clone)return t.clone(!0);if(t.nodeType&&"function"==typeof t.cloneNode)return t.cloneNode(!0);var r=void 0;return t instanceof Array?r=new Array(t.length):t instanceof Date?r=new Date(t.getTime()):t instanceof Map?(r=new Map,t.forEach(function(t,n){return r.set(n,e(t))})):t instanceof RegExp?r=new RegExp(t):t instanceof Set?(r=new Set,t.forEach(function(t){return r.add(e(t))})):r=Object.create(Object.getPrototypeOf(t)),Object.keys(t).forEach(function(n){return r[n]=e(t[n])}),r}function t(e){for(var t=document.createDocumentFragment(),r=document.createElement("p"),n=void 0;null!==(n=e.firstChild);){if(n.nodeType===Node.ELEMENT_NODE){switch(n.nodeName.toUpperCase()){case"BR":if(null!==n.nextSibling&&n.nextSibling.nodeType===Node.ELEMENT_NODE&&"BR"===n.nextSibling.nodeName.toUpperCase()){e.removeChild(n.nextSibling),e.removeChild(n),t.appendChild(r),r=document.createElement("p");continue}if(!r.hasChildNodes()){e.removeChild(n);continue}break;case"ADDRESS":case"ARTICLE":case"ASIDE":case"BLOCKQUOTE":case"CENTER":case"DIV":case"DL":case"FIGURE":case"FOOTER":case"FORM":case"H1":case"H2":case"H3":case"H4":case"H5":case"H6":case"HEADER":case"HR":case"MAIN":case"NAV":case"OL":case"P":case"PRE":case"SECTION":case"TABLE":case"UL":r.hasChildNodes()&&(t.appendChild(r),r=document.createElement("p")),t.appendChild(n);continue}}r.appendChild(n)}r.hasChildNodes()&&t.appendChild(r),e.appendChild(t)}function r(){try{return document.activeElement||null}catch(e){return null}}function n(e,t,r){var n="object"===(void 0===e?"undefined":_typeof(e))?e:document.getElementById(e);if(null==n)return null;var a=Array.isArray(t)?t:[t];jQuery(n).empty();for(var i=0,o=a.length;i<o;++i)if(Story.has(a[i]))return new Wikifier(n,Story.get(a[i]).processText().trim()),n;if(null!=r){var s=String(r).trim();""!==s&&new Wikifier(n,s)}return n}function a(e,t,r){var n=jQuery(document.createElement("div")),a=jQuery(document.createElement("button")),i=jQuery(document.createElement("pre")),o=L10n.get("errorTitle")+": "+(t||"unknown error");return a.addClass("error-toggle").ariaClick({label:L10n.get("errorToggle")},function(){a.hasClass("enabled")?(a.removeClass("enabled"),i.attr({"aria-hidden":!0,hidden:"hidden"})):(a.addClass("enabled"),i.removeAttr("aria-hidden hidden"))}).appendTo(n),jQuery(document.createElement("span")).addClass("error").text(o).appendTo(n),jQuery(document.createElement("code")).text(r).appendTo(i),i.addClass("error-source").attr({"aria-hidden":!0,hidden:"hidden"}).appendTo(n),n.addClass("error-view").appendTo(e),console.warn(o+"\n\t"+r.replace(/\n/g,"\n\t")),!1}function i(e,t){var r=i;switch(void 0===e?"undefined":_typeof(e)){case"number":if(Number.isNaN(e))return t;break;case"object":if(null===e)return t;if(Array.isArray(e))return e.map(function(e){return r(e,t)}).join(", ");if(e instanceof Set)return[].concat(_toConsumableArray(e)).map(function(e){return r(e,t)}).join(", ");if(e instanceof Map){return"{ "+[].concat(_toConsumableArray(e)).map(function(e){var n=_slicedToArray(e,2),a=n[0],i=n[1];return r(a,t)+" → "+r(i,t)}).join(", ")+" }"}return e instanceof Date?e.toLocaleString():"function"==typeof e.toString?e.toString():Object.prototype.toString.call(e);case"function":case"undefined":return t}return String(e)}return Object.freeze(Object.defineProperties({},{clone:{value:e},convertBreaks:{value:t},safeActiveElement:{value:r},setPageElement:{value:n},throwError:{value:a},toStringOrDefault:{value:i}}))
