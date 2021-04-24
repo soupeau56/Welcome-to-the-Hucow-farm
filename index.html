@@ -474,28 +474,6 @@ function Events() {
     }
 
 
-    const actionList = {
-        "loicTakeDildo": function (twineVars) {
-            twineVars.loic.domination++
-            twineVars.player.item.dildo--
-            if (twineVars.loic.item.dildo) twineVars.loic.item.dildo++
-            else twineVars.loic.item.dildo = 1
-        },
-        "loicSpankPlayer": function (twineVars) {
-            twineVars.loic.domination++
-            twineVars.player.cry++
-        },
-        "loicPutChastyBeltPlayer": function (twineVars) {
-            twineVars.loic.domination++
-            twineVars.player.clothings.chastityBelt = "chastity_belt"
-        }
-
-    }
-
-    this.action = function (string, twineVars) {
-        return actionList[string](twineVars)
-    }
-
 
 }
 
@@ -646,6 +624,8 @@ window.src = {
 "DILDO":"images/Object/DILDO.jpg",
 "FRANCE_MAP":"images/Object/FRANCE_MAP.jpg",
 "PADDLE":"images/Object/PADDLE.jpg",
+"DIAL_PHONE":"images/Object/DIAL_PHONE.jpg",
+"VIEW_COW_TAIL":"images/Object/VIEW_COW_TAIL.jpg",
 "Pictures":"images/Pictures.js",
 "BAR":"images/Place/BAR.jpg",
 "BATHROOM":"images/Place/BATHROOM.jpg",
@@ -804,7 +784,8 @@ function SideBar(clara) {
                 else return this.clara.body.getVaginaPicture()
             // socks
             case 6:
-                return clothing.tigthsTop ? clothings.tigthsTop : null
+                if(this.clara.body.haveTail()) return this.clara.body.getTailPicture()
+                else return clothing.tigthsTop ? clothings.tigthsTop : null
             case 7:
                 if (clothing.shoes) return clothing.shoes
                 else
@@ -1525,18 +1506,21 @@ function PlayerBodyRepository() {
             milk: 0
         }
         this.body().butt = {
-            size: 2
+            size: 2,
         }
         this.body().vagina = {
             hairy: true
         }
 
+        this.body().tail = {
+            here: false,
+            type: ""
+        }
+
         this.body().feet = "FEET"
     }
 
-    this.getBody = () => {
-        return this.body()
-    }
+    this.getBody = () => this.body()
 
     this.getHairPicture = () => {
         const hair = this.body().hair
@@ -1553,9 +1537,9 @@ function PlayerBodyRepository() {
         return "VAGINA_HAIRY"
     }
 
-    this.getFeetPicture = () => {
-        return this.body().feet
-    }
+    this.getFeetPicture = () =>  this.body().feet
+
+    this.getTailPicture = () => this.body().tail.type + "_TAIL"
 
     this.setFeet = (value) => {
         this.body().feet = value
@@ -1566,6 +1550,13 @@ function PlayerBodyRepository() {
             clara.clothing.lockClothing("socks")
         }
     }
+
+    this.setTail = (value) => {
+        this.body().tail.here = true
+        this.body().tail.type = value
+    }
+    this.removeTail = () => this.body().tail.here = false
+    this.haveTail = () => this.body().tail.here
 }
 /* twine-user-script #15: "PlayerClothingRepository.js" */
 
@@ -2128,10 +2119,11 @@ Qu&#39;allez vous faire
 
 [[Go_to_theArena]]</tw-passagedata><tw-passagedata pid="32" name="Supplier Philippe" tags="" position="632,3509" size="100,100">[[Vous lui promété de bien vous conduire]]</tw-passagedata><tw-passagedata pid="33" name="Philippe_talk_Farm" tags="" position="3593,1588" size="100,100">[img[src.PHIILIPPE_PORTRAIT]]
 
-&lt;&lt;if event(&quot;claraShouldNotBeInPajamas&quot;)&gt;&gt; Qu&#39;est-ce que tu fous en pijamas toi ? Vas t&#39;habiller !
-&lt;&lt;elseif event(&quot;claraShouldWearDirndl&quot;)&gt;&gt;
-&lt;&lt;display Philippe_talk_claraShouldWearDirndl&gt;&gt;
-&lt;&lt;endif&gt;&gt;
+&lt;&lt;if !visited(&quot;Philippe_talk_Farm_hucow_tf&quot;)&gt;&gt;
+[[How did I get turned into a hucow?|Philippe_talk_Farm_hucow_tf]]&lt;&lt;endif&gt;&gt;&lt;&lt;if visited(&quot;Find_your_phone&quot;)&gt;&gt;
+[[I lost my phone, can I borrow yours?|Philippe_talk_Farm_borrow_phone]]&lt;&lt;endif&gt;&gt;&lt;&lt;if !visited(&quot;Philippe_talk_Farm_beautiful_cows&quot;)&gt;&gt;
+[[You have beautiful cows from what I see.|Philippe_talk_Farm_beautiful_cows]]&lt;&lt;endif&gt;&gt;&lt;&lt;if !visited(&quot;Philippe_talk_Farm_Morann_and_Lisa&quot;)&gt;&gt; 
+[[How long have you lived with Morann and Lisa?|Philippe_talk_Farm_Morann_and_Lisa]]&lt;&lt;endif&gt;&gt;
 [[return|$returnPage]]</tw-passagedata><tw-passagedata pid="34" name="Farm_travel" tags="" position="75,1038" size="100,100">You are in the car, with Philippe.
 
 &lt;&lt;display Philippe_talk_begin&gt;&gt;
@@ -2147,7 +2139,7 @@ You take a shower and go to bed.
 
 [img[src.SHOWER]]
 
-[[sleep |farm_firt_sleep][clara.wardrobe.wearOutfit(&quot;pajamas&quot;)]]</tw-passagedata><tw-passagedata pid="36" name="Choice_Philippe_House" tags="" position="2199,318" size="100,100">&lt;&lt;set $actualPassage to passage()&gt;&gt;&lt;&lt;if $player_can_move_in_house == true&gt;&gt;
+[[sleep |farm_firt_sleep][clara.wardrobe.wearOutfit(&quot;pajamas&quot;)]]</tw-passagedata><tw-passagedata pid="36" name="Choice_Philippe_House" tags="" position="2201,280" size="100,100">&lt;&lt;set $actualPassage to passage()&gt;&gt;&lt;&lt;if $player_can_move_in_house == true&gt;&gt;
 [[wait 1 hour |$actualPassage][clock.timeGoes(1,0)]]
 [[wait 15 minutes |$actualPassage][clock.timeGoes(0,15)]]
 Go to:
@@ -2173,8 +2165,11 @@ outside~
 
 [[wardrobe|WARDROBE]] 
 [[wear day outfit|Philippe_House][clara.wardrobe.wearOutfit(clock.getNameDay().toLowerCase())]]
-&lt;&lt;if visited(&quot;Take_stock_of_your_clothes&quot;) === 0&gt;&gt;[[Take stock of your clothes|Take_stock_of_your_clothes]]
-&lt;&lt;endif&gt;&gt;[[go to sleep|sleep][clara.wardrobe.wearOutfit(&quot;pajamas&quot;)]]</tw-passagedata><tw-passagedata pid="38" name="FARM_BATHROOM" tags="" position="2308,602" size="100,100">&lt;&lt;if event(&quot;Someone_take_a_shower_in_Philippe_house&quot;)&gt;&gt;
+&lt;&lt;if !visited(&quot;Take_stock_of_your_clothes&quot;)&gt;&gt;[[Take stock of your clothes|Take_stock_of_your_clothes]]
+&lt;&lt;endif&gt;&gt;
+&lt;&lt;if !visited(&quot;Find_your_phone&quot;)&gt;&gt;[[Find your phone|Find_your_phone]]&lt;&lt;endif&gt;&gt;
+
+[[go to sleep|sleep][clara.wardrobe.wearOutfit(&quot;pajamas&quot;)]]</tw-passagedata><tw-passagedata pid="38" name="FARM_BATHROOM" tags="" position="1895,1815" size="100,100">&lt;&lt;if event(&quot;Someone_take_a_shower_in_Philippe_house&quot;)&gt;&gt;
 Someone is in the bathroom.
  [img[src.FARM_BATHROOM_DOOR]]
  &lt;&lt;if event(&quot;Philippe_take_a_shower&quot;)&gt;&gt; [[Open the door for viewing|spy_Philippe_bathroom]]&lt;&lt;elseif event(&quot;Morann_take_a_shower&quot;)&gt;&gt;[[Open the door for viewing|spy_Morann_bathroom]]&lt;&lt;elseif event(&quot;Lisa_take_a_shower&quot;)&gt;&gt;[[Open the door for viewing|spy_Lisa_bathroom]]&lt;&lt;endif&gt;&gt;
@@ -2188,15 +2183,17 @@ Someone is in the bathroom.
 [img[src.FARM_DINNING_ROOM]]
 
 &lt;&lt;if event(&quot;breakFastTime&quot;)&gt;&gt;[[Taking your breakfast|Taking_breakfast][clock.timeGoes(0,15)]] &lt;&lt;endif&gt;&gt;&lt;&lt;if event(&quot;lunchTime&quot;)&gt;&gt;[[Taking your lunch|Taking_lunch][clock.timeGoes(0,15)]] &lt;&lt;endif&gt;&gt;&lt;&lt;if event(&quot;dinnerTime&quot;)&gt;&gt;[[Taking your dinner|Taking_dinner][clock.timeGoes(0,15)]] &lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="40" name="FARM_GARDEN" tags="" position="2048,602" size="100,100">&lt;h1&gt;Garden&lt;/h1&gt;
-[img[src.FARM_GARDEN]]</tw-passagedata><tw-passagedata pid="41" name="FARM_LIVING_ROOM" tags="" position="2179,604" size="100,100">&lt;h1&gt;Living Room&lt;/h1&gt;
+[img[src.FARM_GARDEN]]</tw-passagedata><tw-passagedata pid="41" name="FARM_LIVING_ROOM" tags="" position="2183,879" size="100,100">&lt;h1&gt;Living Room&lt;/h1&gt;
 
-[img[src.FARM_LIVING_ROOM]]</tw-passagedata><tw-passagedata pid="42" name="FARM_KITCHEN" tags="" position="1918,602" size="100,100">&lt;h1&gt;Kitchen&lt;/h1&gt;
+[img[src.FARM_LIVING_ROOM]]
+
+&lt;&lt;if visited(&quot;find_Philippe_phone&quot;) &gt;&gt;[[There is a phone here|find_Philippe_phone]]&lt;&lt;else&gt;&gt;[[Using the dial phone|Philippe_phone_calling]]&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="42" name="FARM_KITCHEN" tags="" position="1918,602" size="100,100">&lt;h1&gt;Kitchen&lt;/h1&gt;
 [img[src.FARM_KITCHEN]]
-Double-click this passage to edit it.</tw-passagedata><tw-passagedata pid="43" name="FARM_PEE" tags="" position="2360,726" size="100,100">You pee
+Double-click this passage to edit it.</tw-passagedata><tw-passagedata pid="43" name="FARM_PEE" tags="" position="1949,1930" size="100,100">You pee
 [img[src.PEE_WC]]
 &lt;&lt;display Choice_Philippe_House&gt;&gt;</tw-passagedata><tw-passagedata pid="44" name="farm_firt_sleep" tags="" position="64,2242" size="100,100">You fall asleep fast. Unaware of what is happening to your body...
 
-[[wake up|Farm_first_WakeUP][clara.body.setFeet(&quot;HOOF&quot;),clock.timeSleep(6)]]</tw-passagedata><tw-passagedata pid="45" name="Passage sans titre" tags="" position="776,2239" size="100,100">Tous votre corp ce met à grosir. Vous gagnez en tours de poitrine, vos deviennent plus grausse et vos membre gagne en muscle. 
+[[wake up|Farm_first_WakeUP][clara.body.setFeet(&quot;HOOF&quot;),clara.body.setTail(&quot;COW&quot;),clock.timeSleep(6)]]</tw-passagedata><tw-passagedata pid="45" name="Passage sans titre" tags="" position="776,2239" size="100,100">Tous votre corp ce met à grosir. Vous gagnez en tours de poitrine, vos deviennent plus grausse et vos membre gagne en muscle. 
 
 Vos orelles s&#39;allonge et ce recouvre de poile blanc.
 
@@ -2352,7 +2349,7 @@ Once freed, Philippe signals you to follow him by pulling on the chain while you
 [[Wait for a moment of inattention to pull the chain and run away|Clara_run_after_hit_Philippe]](Warning ! this path is under construction)
 
 &lt;&lt;run clara.clothing.wear({necklace: &quot;COLLAR_PADLOCK&quot;})&gt;&gt;
-&lt;&lt;run clock.timeGoes(0,15)&gt;&gt;</tw-passagedata><tw-passagedata pid="78" name="FARM_BARN" tags="" position="1432,598" size="100,100">&lt;h1&gt;Barn&lt;/h1&gt;
+&lt;&lt;run clock.timeGoes(0,15)&gt;&gt;</tw-passagedata><tw-passagedata pid="78" name="FARM_BARN" tags="" position="1532,599" size="100,100">&lt;h1&gt;Barn&lt;/h1&gt;
 [img[src.FARM_BARN]]</tw-passagedata><tw-passagedata pid="79" name="FARM_BARN_first_punish" tags="" position="905,3245" size="100,100">Philippe takes you to a pen, attaches your chain to the wall and leaves
 
 There is a hitch in the paddock, you lie down in it. 
@@ -2399,11 +2396,11 @@ Vous allez dans la cuisine
 &lt;&lt;display FARM_DINNING_ROOM&gt;&gt;</tw-passagedata><tw-passagedata pid="86" name="mise en cage" tags="" position="271,3490" size="100,100">&lt;&lt;display got_CAGED_BDSM&gt;&gt;
 
 
-[[Go_to_theArena]]</tw-passagedata><tw-passagedata pid="87" name="FARM_SHOWER" tags="" position="2252,726" size="100,100">You take a shower.
+[[Go_to_theArena]]</tw-passagedata><tw-passagedata pid="87" name="FARM_SHOWER" tags="" position="1837,1929" size="100,100">You take a shower.
 
 [img[src.SHOWER]]
 
-&lt;&lt;display Choice_Philippe_House&gt;&gt;</tw-passagedata><tw-passagedata pid="88" name="Philippe_talk_claraShouldWearDirndl" tags="" position="3859,1515" size="100,100">Double-click this passage to edit it.</tw-passagedata><tw-passagedata pid="89" name="Passage sans titre 6" tags="" position="3879,1700" size="100,100">J&#39;avais oublié de te dire, tu dois porter un dirndl</tw-passagedata><tw-passagedata pid="90" name="Passage sans titre 8" tags="" position="3878,1820" size="100,100">$player.name pourquoi tu ne porte pas ton Dirndl ?</tw-passagedata><tw-passagedata pid="91" name="Passage sans titre 9" tags="" position="4003,1808" size="100,100">Clara ta robe !</tw-passagedata><tw-passagedata pid="92" name="Passage sans titre 10" tags="" position="4016,1936" size="100,100">Sa suffi maintenant, je te confisque tes vetement !</tw-passagedata><tw-passagedata pid="93" name="Clara_first_milking_end" tags="" position="909,3124" size="100,100">You hear a clicking sound, the pump doesn&#39;t work anymore and the vibrator has stopped massaging your vulva.
+&lt;&lt;display Choice_Philippe_House&gt;&gt;</tw-passagedata><tw-passagedata pid="88" name="Philippe_talk_claraShouldWearDirndl" tags="" position="3859,1515" size="100,100">Double-click this passage to edit it.</tw-passagedata><tw-passagedata pid="89" name="Passage sans titre 6" tags="" position="3846,1679" size="100,100">J&#39;avais oublié de te dire, tu dois porter un dirndl</tw-passagedata><tw-passagedata pid="90" name="Passage sans titre 8" tags="" position="3872,1800" size="100,100">$player.name pourquoi tu ne porte pas ton Dirndl ?</tw-passagedata><tw-passagedata pid="91" name="Passage sans titre 9" tags="" position="4003,1808" size="100,100">Clara ta robe !</tw-passagedata><tw-passagedata pid="92" name="Passage sans titre 10" tags="" position="4016,1936" size="100,100">Sa suffi maintenant, je te confisque tes vetement !</tw-passagedata><tw-passagedata pid="93" name="Clara_first_milking_end" tags="" position="909,3124" size="100,100">You hear a clicking sound, the pump doesn&#39;t work anymore and the vibrator has stopped massaging your vulva.
 _It&#39;s over, says Philippe as he arrives.
 He passes in front of you, and removes the nipples from your breasts.
 &quot;At the moment, you haven&#39;t produced anything, but don&#39;t worry, it&#39;s normal, it&#39;s your first time. In a few days you will produce as much as Morann and Lisa.&quot; 
@@ -2420,7 +2417,7 @@ You are attached...
   Morann is here: 
   &lt;&lt;display Morann_Farm&gt;&gt;&lt;&lt;endif&gt;&gt;&lt;&lt;if event(&quot;Lisa_talk_&quot;+$place)&gt;&gt;
   Lisa is here: 
-&lt;&lt;display Lisa_Farm&gt;&gt;&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="96" name="FARM_PHILippe_BEDROOM" tags="" position="2430,602" size="100,100">&lt;h1&gt;Philippe Bedroom&lt;/h1&gt;
+&lt;&lt;display Lisa_Farm&gt;&gt;&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="96" name="FARM_PHILippe_BEDROOM" tags="" position="2636,1393" size="100,100">&lt;h1&gt;Philippe Bedroom&lt;/h1&gt;
 &lt;&lt;if !event(&quot;Morann_Philippe_make_love_in_philippe_bedroom&quot;)&gt;&gt;[img[src.FARM_PHILIPPE_BEDROOM]]&lt;&lt;else&gt;&gt;
 [img[src.FARM_PHILIPPE_BEDROOM_DOOR]]&lt;&lt;endif&gt;&gt;
 
@@ -2439,7 +2436,7 @@ You have breakfast
 &lt;&lt;set $random to getRandom(1,3)&gt;&gt;
 &lt;&lt;if $random == 1&gt;&gt;[img[src.BREAKFAST]]&lt;&lt;elseif $random == 2&gt;&gt;[img[src.BREAKFAST2]]&lt;&lt;else&gt;&gt;[img[src.BREAKFAST3]]&lt;&lt;endif&gt;&gt;
 
-&lt;&lt;display Choice_Philippe_House&gt;&gt;</tw-passagedata><tw-passagedata pid="101" name="WARDROBE" tags="" position="1664,901" size="100,100">OUTFITS
+&lt;&lt;display Choice_Philippe_House&gt;&gt;</tw-passagedata><tw-passagedata pid="101" name="WARDROBE" tags="" position="1657,953" size="100,100">OUTFITS
 &lt;&lt;set $wardrobeOutfitChoices to clara.wardrobe.getOutfitChoices()&gt;&gt;
 &lt;&lt;print $wardrobeOutfitChoices&gt;&gt;
 
@@ -2447,7 +2444,7 @@ WARDROBE
 &lt;&lt;set $wardrobeInterface to clara.wardrobe.getInterface()&gt;&gt;
 &lt;&lt;print $wardrobeInterface&gt;&gt;
 
-&lt;&lt;display Choice_Philippe_House&gt;&gt;</tw-passagedata><tw-passagedata pid="102" name="sleep" tags="" position="1499,718" size="100,100">You sleep
+[[return|Philippe_House]]</tw-passagedata><tw-passagedata pid="102" name="sleep" tags="" position="1546,832" size="100,100">You sleep
 
 
 &lt;&lt;display sleep_Director&gt;&gt;</tw-passagedata><tw-passagedata pid="103" name="sleep_Director" tags="" position="1685,328" size="100,100">[[Morning|Philippe_House][clock.timeSleep(6),$hadBreakfast = false,$place = &quot;dinning_room&quot;]]</tw-passagedata><tw-passagedata pid="104" name="Philippe_What_kind_of_farm_is_this" tags="" position="784,1111" size="100,100">_ What did your uncle tell you?
@@ -2575,13 +2572,13 @@ You grab the rope.
 
 (Rope added in inventory)
 
-[[Morann Bedroom|Philippe_House]]</tw-passagedata><tw-passagedata pid="128" name="Morann_Philippe_make_love_in_philippe_bedroom_spy_1" tags="" position="2433,1248" size="100,100">You see Philippe in doggy style position with a woman. Pink hair goes down the back of the young woman and you recognize Morann&#39;s back.
+[[Morann Bedroom|Philippe_House]]</tw-passagedata><tw-passagedata pid="128" name="Morann_Philippe_make_love_in_philippe_bedroom_spy_1" tags="" position="2761,1534" size="100,100">You see Philippe in doggy style position with a woman. Pink hair goes down the back of the young woman and you recognize Morann&#39;s back.
 Your vision leaves no doubt about the nature of what they are doing.
 
 [img[src.FUCKING_THROUGH_DOOR]]
 
 [[Turn around|Philippe_House][$place = &quot;clara_bedroom&quot;]]
-[[Continue to spy on them|Morann_Philippe_make_love_in_philippe_bedroom_spy_2]]</tw-passagedata><tw-passagedata pid="129" name="Morann_Philippe_make_love_in_philippe_bedroom_spy_2" tags="" position="2430,1371" size="100,100">Philippe goes back and forth on Morann&#39;s buttocks. He seems to be well embedded in her.
+[[Continue to spy on them|Morann_Philippe_make_love_in_philippe_bedroom_spy_2]]</tw-passagedata><tw-passagedata pid="129" name="Morann_Philippe_make_love_in_philippe_bedroom_spy_2" tags="" position="2643,1596" size="100,100">Philippe goes back and forth on Morann&#39;s buttocks. He seems to be well embedded in her.
 
 Morann emits small muffled cries repeatedly. 
 
@@ -2589,7 +2586,7 @@ Morann emits small muffled cries repeatedly.
 
 
 [[Turn around|Philippe_House][$place = &quot;clara_bedroom&quot;]]
-[[Start masturbating|Morann_Philippe_make_love_in_philippe_bedroom_spy_3]]</tw-passagedata><tw-passagedata pid="130" name="Morann_Philippe_make_love_in_philippe_bedroom_spy_3" tags="" position="2431,1495" size="100,100">You can&#39;t hold back your excitement.
+[[Start masturbating|Morann_Philippe_make_love_in_philippe_bedroom_spy_3]]</tw-passagedata><tw-passagedata pid="130" name="Morann_Philippe_make_love_in_philippe_bedroom_spy_3" tags="" position="2758,1665" size="100,100">You can&#39;t hold back your excitement.
 You pass your hand between your legs and caress your pussy sensually.
 Meanwhile Philippe and Morann are still making love. 
 
@@ -2600,70 +2597,70 @@ Without realizing it, you emit a jingle.
 You try to hold back. But too late Philippe and Morann stopped. They heard you.
 
 [[Run Away|Philippe_House][Morann.addLove(1),Morann.addSub(-1),Philippe.addLove(1),Philippe.addSub(-1),$place = &quot;clara_bedroom&quot;]]
-[[Look at them stupidly and see what follows|Morann_Philippe_make_love_in_philippe_bedroom_spy_4][$Philippe_bedroom_threesom_choice = 0]]</tw-passagedata><tw-passagedata pid="131" name="Morann_Philippe_make_love_in_philippe_bedroom_spy_4" tags="" position="2430,1619" size="100,100">They don&#39;t seem to be bothered by your intrusion. They even seem happy to see you.
+[[Look at them stupidly and see what follows|Morann_Philippe_make_love_in_philippe_bedroom_spy_4][$Philippe_bedroom_threesom_choice = 0]]</tw-passagedata><tw-passagedata pid="131" name="Morann_Philippe_make_love_in_philippe_bedroom_spy_4" tags="" position="2643,1733" size="100,100">They don&#39;t seem to be bothered by your intrusion. They even seem happy to see you.
 Morann comes to you and invites you to join them in Philippe&#39;s bed. 
 
 
-&lt;&lt;display Philippe_bedroom_threesom_choice&gt;&gt;</tw-passagedata><tw-passagedata pid="132" name="Philippe_bedroom_threesom_choice" tags="" position="2431,1741" size="100,100">[[ask Philippe to suck your pussy|Philippe_bedroom_threesom_choice_Philippe_suck_your_pussy][clock.timeGoes(0,5)]]
+&lt;&lt;display Philippe_bedroom_threesom_choice&gt;&gt;</tw-passagedata><tw-passagedata pid="132" name="Philippe_bedroom_threesom_choice" tags="" position="2753,1807" size="100,100">[[ask Philippe to suck your pussy|Philippe_bedroom_threesom_choice_Philippe_suck_your_pussy][clock.timeGoes(0,5)]]
 [[ask Morann to suck your pussy|Philippe_bedroom_threesom_choice_Morann_suck_your_pussy][clock.timeGoes(0,5)]]
 [[suck Morann pussy|Philippe_bedroom_threesom_choice_suck_pussy][clock.timeGoes(0,5)]]
 [[suck Philippe&#39;s cock|Philippe_bedroom_threesom_choice_suck_cock][clock.timeGoes(0,5)]]
 &lt;&lt;if $Philippe_bedroom_threesom_choice &gt; 2 &gt;&gt;[[Make a thressome|Philippe_bedroom_threesom_choice_threesome]]
 [[leave|Philippe_House][$place = &quot;clara_bedroom&quot;]]&lt;&lt;endif&gt;&gt; 
 
-&lt;&lt;set $Philippe_bedroom_threesom_choice++&gt;&gt;</tw-passagedata><tw-passagedata pid="133" name="Philippe_bedroom_threesom_choice_suck_cock" tags="" position="2431,1865" size="100,100">&lt;&lt;set $random = getRandom(1,4)&gt;&gt;You suck Philippe&#39;s dick
+&lt;&lt;set $Philippe_bedroom_threesom_choice++&gt;&gt;</tw-passagedata><tw-passagedata pid="133" name="Philippe_bedroom_threesom_choice_suck_cock" tags="" position="2865,1885" size="100,100">&lt;&lt;set $random = getRandom(1,4)&gt;&gt;You suck Philippe&#39;s dick
 
 [img[src[&quot;BLOWJOB&quot;+$random]]]
 
 &lt;&lt;display Philippe_bedroom_threesom_choice&gt;&gt;
 
 
-&lt;&lt;if visited(&quot;Philippe_bedroom_threesom_choice_suck_cock&quot;) == 1 &gt;&gt;&lt;&lt;run Philippe.addLove(1)&gt;&gt;&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="134" name="Philippe_bedroom_threesom_choice_suck_pussy" tags="" position="2552,1865" size="100,100">&lt;&lt;set $random = getRandom(1,2)&gt;&gt;You make a cunnilingus to Morann
+&lt;&lt;if visited(&quot;Philippe_bedroom_threesom_choice_suck_cock&quot;) == 1 &gt;&gt;&lt;&lt;run Philippe.addLove(1)&gt;&gt;&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="134" name="Philippe_bedroom_threesom_choice_suck_pussy" tags="" position="2639,1994" size="100,100">&lt;&lt;set $random = getRandom(1,2)&gt;&gt;You make a cunnilingus to Morann
 
 [img[src[&quot;CUNNILINGUS_GIRL&quot;+$random]]]
 
 &lt;&lt;display Philippe_bedroom_threesom_choice&gt;&gt;
 
 
-&lt;&lt;if visited(&quot;Philippe_bedroom_threesom_choice_suck_pussy&quot;) == 1 &gt;&gt;&lt;&lt;run Morann.addLove(1)&gt;&gt;&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="135" name="Philippe_bedroom_threesom_choice_Morann_suck_your_pussy" tags="" position="2672,1865" size="100,100">&lt;&lt;set $random = getRandom(1,2)&gt;&gt;Morann gives you a cunnilingus.
+&lt;&lt;if visited(&quot;Philippe_bedroom_threesom_choice_suck_pussy&quot;) == 1 &gt;&gt;&lt;&lt;run Morann.addLove(1)&gt;&gt;&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="135" name="Philippe_bedroom_threesom_choice_Morann_suck_your_pussy" tags="" position="2750,1994" size="100,100">&lt;&lt;set $random = getRandom(1,2)&gt;&gt;Morann gives you a cunnilingus.
 
 [img[src[&quot;CUNNILINGUS_GIRL&quot;+$random]]]
 
 &lt;&lt;display Philippe_bedroom_threesom_choice&gt;&gt;
 
 
-&lt;&lt;if visited(&quot;Philippe_bedroom_threesom_choice_Morann_suck_your_pussy&quot;) === 1 &gt;&gt;&lt;&lt;run Morann.addLove(1)&gt;&gt;&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="136" name="Philippe_bedroom_threesom_choice_Philippe_suck_your_pussy" tags="" position="2310,1867" size="100,100">&lt;&lt;set $random = getRandom(1,2)&gt;&gt;Philippe gives you a cunnilingus.
+&lt;&lt;if visited(&quot;Philippe_bedroom_threesom_choice_Morann_suck_your_pussy&quot;) === 1 &gt;&gt;&lt;&lt;run Morann.addLove(1)&gt;&gt;&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="136" name="Philippe_bedroom_threesom_choice_Philippe_suck_your_pussy" tags="" position="2637,1887" size="100,100">&lt;&lt;set $random = getRandom(1,2)&gt;&gt;Philippe gives you a cunnilingus.
 
 [img[src[&quot;CUNNILINGUS_MEN&quot;+$random]]]
 
 &lt;&lt;display Philippe_bedroom_threesom_choice&gt;&gt;
 
 
-&lt;&lt;if visited(&quot;Philippe_bedroom_threesom_choice_Philippe_suck_your_pussy&quot;) === 1 &gt;&gt;&lt;&lt;run Philippe.addLove(1)&gt;&gt;&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="137" name="Philippe_bedroom_threesom_choice_threesome" tags="" position="2788,1867" size="100,100">You make a threesome with Morann and Philippe
+&lt;&lt;if visited(&quot;Philippe_bedroom_threesom_choice_Philippe_suck_your_pussy&quot;) === 1 &gt;&gt;&lt;&lt;run Philippe.addLove(1)&gt;&gt;&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="137" name="Philippe_bedroom_threesom_choice_threesome" tags="" position="2861,1994" size="100,100">You make a threesome with Morann and Philippe
 
 [img[src.THREESOMES_FFM1]]
 
 &lt;&lt;display Philippe_bedroom_threesom_choice&gt;&gt;
 
 
-&lt;&lt;if visited(&quot;Philippe_bedroom_threesom_choice_threesome&quot;) === 1 &gt;&gt;&lt;&lt;run Morann.addLove(1),Philippe.addLove(1)&gt;&gt;&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="138" name="spy_Philippe_bathroom" tags="" position="1651,1556" size="100,100">You can see Philippe, taking his shower
+&lt;&lt;if visited(&quot;Philippe_bedroom_threesom_choice_threesome&quot;) === 1 &gt;&gt;&lt;&lt;run Morann.addLove(1),Philippe.addLove(1)&gt;&gt;&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="138" name="spy_Philippe_bathroom" tags="" position="1639,2084" size="100,100">You can see Philippe, taking his shower
 [img[src.SHOWER_BACK_MEN]]
 He is soaping his body.
 
 [[Go join him in the shower|join_Philippe_shower]]
 [[keep checking him out while he&#39;s in the shower|spy_Philippe_bathroom2]]
-[[to leave|Philippe_House]]</tw-passagedata><tw-passagedata pid="139" name="spy_Morann_bathroom" tags="" position="1904,1560" size="100,100">You can see Morann, taking his shower
+[[to leave|Philippe_House]]</tw-passagedata><tw-passagedata pid="139" name="spy_Morann_bathroom" tags="" position="1895,2089" size="100,100">You can see Morann, taking his shower
 [img[src.SHOWER_BACK_GIRL]]
 
 [[Go join her in the shower|join_Morann_shower]]
 [[keep checking her out while she&#39;s in the shower|spy_Morann_bathroom2]]
-[[to leave|Philippe_House]]</tw-passagedata><tw-passagedata pid="140" name="Take_stock_of_your_clothes" tags="" position="1640,777" size="100,100">It looks like your shoes and socks won&#39;t serve you for quite a while.
+[[to leave|Philippe_House]]</tw-passagedata><tw-passagedata pid="140" name="Take_stock_of_your_clothes" tags="" position="1654,831" size="100,100">It looks like your shoes and socks won&#39;t serve you for quite a while.
 You look at your shoes and socks. With your clogs it&#39;s impossible to put them on.
 
 There are clothes that are not yours in the wardrobe.
 You can find a series of dresses in the wardrobe, as well as a long nightgown. Obviously, his clothes are from here and intended for you.
 
-[[retrun|Philippe_House]]</tw-passagedata><tw-passagedata pid="141" name="join_Philippe_shower" tags="" position="1597,1702" size="100,100">&lt;&lt;if Philippe.getLove() &lt; 5 &gt;&gt;&lt;&lt;if visited(&quot;join_Philippe_shower&quot;) == 1 &gt;&gt;&lt;&lt;run Philippe.addLove(-1)&gt;&gt;&lt;&lt;endif&gt;&gt;
+[[return|Philippe_House]]</tw-passagedata><tw-passagedata pid="141" name="join_Philippe_shower" tags="" position="1582,2195" size="100,100">&lt;&lt;if Philippe.getLove() &lt; 5 &gt;&gt;&lt;&lt;if visited(&quot;join_Philippe_shower&quot;) == 1 &gt;&gt;&lt;&lt;run Philippe.addLove(-1)&gt;&gt;&lt;&lt;endif&gt;&gt;
 Philippe sees you and doesn&#39;t seem to be excited about your presence. 
 _ What are you doing here? he says as he continues to lather soap on his washboard abs.
 
@@ -2675,12 +2672,12 @@ _ Here you are. he says as he continues to lather soap on his washboard abs.
 
 [[Answer timidly|join_Philippe_shower_shy]]
 [[Answer with confidence|join_Philippe_shower_confidence]]
-&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="142" name="spy_Philippe_bathroom2" tags="" position="1710,1706" size="100,100">Philippe is tall, buff man with perfect physique, a six-pack stomach and muscular arms and legs. 
+&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="142" name="spy_Philippe_bathroom2" tags="" position="1696,2196" size="100,100">Philippe is tall, buff man with perfect physique, a six-pack stomach and muscular arms and legs. 
 By looking at his backside you can see that he has a long bushy tail, proof that he is a hubull the female version of the hucow.
 His feet however are those of a human.
 
 [[Go join him in the shower|join_Philippe_shower]]
-[[to leave|Philippe_House]]</tw-passagedata><tw-passagedata pid="143" name="join_Philippe_shower_shy" tags="" position="1718,1853" size="100,100">You lower your head.
+[[to leave|Philippe_House]]</tw-passagedata><tw-passagedata pid="143" name="join_Philippe_shower_shy" tags="" position="1695,2305" size="100,100">You lower your head.
 _I just wanted to know if you wanted some intimate comfort... you ask feverishly.&lt;&lt;if visited(&quot;join_Philippe_shower_shy&quot;) == 1 &gt;&gt;&lt;&lt;run Philippe.addLove(1), Philippe.addSub(-1)&gt;&gt;&lt;&lt;endif&gt;&gt;&lt;&lt;if Philippe.getLove() &lt; 5&gt;&gt;
 Philippe sighs.
 _ $player.name, pliz. Get out. 
@@ -2694,7 +2691,7 @@ Because of your perverted nature, you moan in ecstasy as you feel him slowly thr
 
 After a while it helps you to wash and to recover from what has happened.
 
-[[you get out of the shower|Philippe_House][clock.timeGoes(0,30)]] &lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="144" name="join_Philippe_shower_confidence" tags="" position="1598,1855" size="100,100">You grab his manly member. 
+[[you get out of the shower|Philippe_House][clock.timeGoes(0,30)]] &lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="144" name="join_Philippe_shower_confidence" tags="" position="1584,2305" size="100,100">You grab his manly member. 
 _Don&#39;t lie, I know you&#39;re a pervert who only wants one thing.&lt;&lt;if visited(&quot;join_Philippe_shower_confidence&quot;) == 1 &gt;&gt;&lt;&lt;run Philippe.addLove(-1), Philippe.addSub(1)&gt;&gt;&lt;&lt;endif&gt;&gt;&lt;&lt;if Philippe.getLove() &lt; 8 &gt;&gt;&lt;&lt;if visited(&quot;join_Philippe_shower_confidence&quot;) == 1 &gt;&gt;&lt;&lt;run Philippe.addSub(-1)&gt;&gt;&lt;&lt;endif&gt;&gt;
 _ You&#39;re too confident $player.name, get out.
 _ Don&#39;t be shy.
@@ -2709,7 +2706,7 @@ Because of your perverted nature, you moan in ecstasy as you feel him slowly thr
 
 After a while it helps you to wash and to recover from what has happened.
 
-[[you get out of the shower|Philippe_House][clock.timeGoes(0,30)]] &lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="145" name="join_Morann_shower" tags="" position="1845,1683" size="100,100">Morann sees you and smiles at you.
+[[you get out of the shower|Philippe_House][clock.timeGoes(0,30)]] &lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="145" name="join_Morann_shower" tags="" position="1842,2200" size="100,100">Morann sees you and smiles at you.
 
 _ Hello ! want to join me ?
 
@@ -2719,7 +2716,7 @@ She admits her chest by lifting it sensually in your direction
 [[Answer with confidence|join_Morann_shower_confidence]]
 
 
-&lt;&lt;if visited(&quot;join_Morann_shower&quot;) == 1 &gt;&gt;&lt;&lt;run Morann.addLove(1)&gt;&gt;&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="146" name="spy_Morann_bathroom2" tags="" position="1964,1686" size="100,100">She has long pink hair. Her skin... is fair. Seriously, the sun doesn&#39;t even tan her.
+&lt;&lt;if visited(&quot;join_Morann_shower&quot;) == 1 &gt;&gt;&lt;&lt;run Morann.addLove(1)&gt;&gt;&lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="146" name="spy_Morann_bathroom2" tags="" position="1951,2200" size="100,100">She has long pink hair. Her skin... is fair. Seriously, the sun doesn&#39;t even tan her.
 Her breasts are like white massive melons bouncing with her movements.
 Morann&#39;s butt is a big, round, tight, firm, pale, adorable butt. Her butt cheeks are perfectly formed and her tail wags from right to left.
 She has clogs like you. But her walk, unlike yours, seems much more refined and agile.
@@ -2727,7 +2724,12 @@ She has clogs like you. But her walk, unlike yours, seems much more refined and 
 [img[src.SHOWER_BACK_GIRL]]
 
 [[Go join her in the shower|join_Morann_shower]]
-[[to leave|Philippe_House]]</tw-passagedata><tw-passagedata pid="147" name="spy_Lisa_bathroom" tags="" position="2175,1551" size="100,100">Double-click this passage to edit it.</tw-passagedata><tw-passagedata pid="148" name="join_Morann_shower_shy" tags="" position="1837,1833" size="100,100">[[you get out of the shower|Philippe_House][clock.timeGoes(0,30)]] &lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="149" name="join_Morann_shower_confidence" tags="" position="1958,1833" size="100,100">[[you get out of the shower|Philippe_House][clock.timeGoes(0,30)]] &lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="150" name="cry" tags="" position="1024,3369" size="100,100">She hugs you and you can feel her bare breasts caressing your skin
+[[to leave|Philippe_House]]</tw-passagedata><tw-passagedata pid="147" name="spy_Lisa_bathroom" tags="" position="2244,2075" size="100,100">You can see Lisa, taking his shower
+[img[src.SHOWER_BACK_GIRL]]
+
+[[Go join her in the shower|join_Lisa_shower]]
+[[keep checking her out while she&#39;s in the shower|spy_Lisa_bathroom2]]
+[[to leave|Philippe_House]]</tw-passagedata><tw-passagedata pid="148" name="join_Morann_shower_shy" tags="" position="1843,2307" size="100,100">[[you get out of the shower|Philippe_House][clock.timeGoes(0,30)]] &lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="149" name="join_Morann_shower_confidence" tags="" position="1951,2306" size="100,100">[[you get out of the shower|Philippe_House][clock.timeGoes(0,30)]] &lt;&lt;endif&gt;&gt;</tw-passagedata><tw-passagedata pid="150" name="cry" tags="" position="1024,3369" size="100,100">She hugs you and you can feel her bare breasts caressing your skin
 
 
 
@@ -2746,7 +2748,85 @@ Philippe returns and hands you your clothes, then takes off your collar without 
 [[Let Morann Go|FARM_BARN_first_punish2]]</tw-passagedata><tw-passagedata pid="153" name="It was actually quite exciting" tags="" position="1134,3366" size="100,100">//TODO
 
 
-[[Let Morann Go|FARM_BARN_first_punish2]]</tw-passagedata></tw-storydata>
+[[Let Morann Go|FARM_BARN_first_punish2]]</tw-passagedata><tw-passagedata pid="154" name="join_Lisa_shower" tags="" position="2192,2184" size="100,100">Lisa sees you and instantly hides her genitals.
+$player.name, you surprised me.
+
+
+[[Greet her and then start washing your teeth.|join_Lisa_shower_brush_teeth]]
+[[Act timidly|join_Lisa_shower_shy]]
+[[Act with confidence|join_Lisa_shower_confidence]]</tw-passagedata><tw-passagedata pid="155" name="spy_Lisa_bathroom2" tags="" position="2299,2186" size="100,100">Double-click this passage to edit it.</tw-passagedata><tw-passagedata pid="156" name="Find_your_phone" tags="" position="1547,952" size="100,100">You look for your phone. This one was supposed to be in your bag, but you can&#39;t find it. 
+It&#39;s annoying, where can it be?
+Did you leave it at your uncle&#39;s place? Maybe you could try to call him.
+
+[[return|Philippe_House]]</tw-passagedata><tw-passagedata pid="157" name="join_Lisa_shower_brush_teeth" tags="" position="2249,2302" size="100,100">Lisa continues to shower while you wash your teeth, but seems a little embarrassed by her presence. 
+
+
+[[profiter d&#39;un moment d&#39;inatention pour lui carresser les fesses]]</tw-passagedata><tw-passagedata pid="158" name="find_Philippe_phone" tags="" position="2148,1030" size="100,100">It&#39;s a dial phone.
+
+[img[src.DIAL_PHONE]]
+
+&quot;A telephone with a dial, Seriously? They are in the Middle Ages here or what?&quot;
+
+[[Calling someone|Philippe_phone_calling]]</tw-passagedata><tw-passagedata pid="159" name="Philippe_phone_calling" tags="" position="2264,1029" size="100,100">[img[src.DIAL_PHONE]]
+
+[[Call your uncle Loic|Philippe_phone_calling_loic]]
+
+[[return|Philippe_House]]</tw-passagedata><tw-passagedata pid="160" name="Philippe_phone_calling_loic" tags="" position="2276,1168" size="100,100">[img[src.DIAL_PHONE]]
+The phone is picked up
+
+_ Hello?
+_ Hi, it&#39;s $player.name.
+_ Hi, $player.name how are you?
+
+&lt;&lt;display phone_calling_loic_choice&gt;&gt;</tw-passagedata><tw-passagedata pid="161" name="phone_calling_loic_hucow_farm" tags="" position="2208,1404" size="100,100">No, I wanted to surprise you.
+
+Do you like it?
+
+[[Yes|phone_calling_loic_hucow_farm_yes]]
+[[No|phone_calling_loic_hucow_farm_no]]</tw-passagedata><tw-passagedata pid="162" name="phone_calling_loic_choice" tags="" position="2306,1287" size="100,100">&lt;&lt;if !visited(&quot;phone_calling_loic_hucow_farm&quot;)&gt;&gt;[[You didn&#39;t tell me it was a hucow farm|phone_calling_loic_hucow_farm]]&lt;&lt;endif&gt;&gt;&lt;&lt;if visited(&quot;Find_your_phone&quot;) &amp;&amp; !visited(&quot;phone_calling_loic_lost_phone&quot;)&gt;&gt;
+[[I can&#39;t find my phone, did I leave it at your place by any chance?|phone_calling_loic_lost_phone]]&lt;&lt;endif&gt;&gt;
+&lt;&lt;if visited(&quot;Philippe_talk_Farm_hucow_tf&quot;) &amp;&amp; !visited(&quot;phone_calling_loic_hucow_tf&quot;)&gt;&gt;[[Loic... Is it you who has turn me into a hucow?|phone_calling_loic_hucow_tf]]&lt;&lt;endif&gt;&gt;
+[[return|Philippe_House]]</tw-passagedata><tw-passagedata pid="163" name="phone_calling_loic_hucow_farm_yes" tags="" position="2256,1514" size="100,100">_ Simpas, the hucow have a rather particular way of life and between us they are naughty.
+_ I&#39;m glad you like it.
+
+
+&lt;&lt;display phone_calling_loic_choice&gt;&gt;</tw-passagedata><tw-passagedata pid="164" name="phone_calling_loic_hucow_farm_no" tags="" position="2143,1513" size="100,100">_ No, it sucks. Can I go back to France?
+_ Well, don&#39;t be so negative, I&#39;m sure you&#39;ll like it there.
+_ Huuurgh ! okay I&#39;ll try
+
+&lt;&lt;display phone_calling_loic_choice&gt;&gt;</tw-passagedata><tw-passagedata pid="165" name="phone_calling_loic_lost_phone" tags="" position="2336,1410" size="100,100">_ Your phone? Oh yes ! I stole it from you.
+_ You did what? Why?
+_ You&#39;re in the country $player.name, if you&#39;re here it&#39;s to enjoy the country and the peace. It&#39;s better that you&#39;re away from this thing.
+_ Huuurgh !
+
+&lt;&lt;display phone_calling_loic_choice&gt;&gt;</tw-passagedata><tw-passagedata pid="166" name="join_Lisa_shower_shy" tags="" position="2129,2301" size="100,100">_Je me suis dit qu&#39;on pouvait, efin heu prendre la douche ensemble.
+
+je suis désolé $player.name mais je préfère prendre ma douche seule.</tw-passagedata><tw-passagedata pid="167" name="join_Lisa_shower_confidence" tags="" position="2365,2305" size="100,100">_ Que dirrait que je me joigne à toi ?</tw-passagedata><tw-passagedata pid="168" name="profiter d&#39;un moment d&#39;inatention pour lui carresser les fesses" tags="" position="2249,2452" size="100,100">Double-click this passage to edit it.</tw-passagedata><tw-passagedata pid="169" name="Philippe_talk_Farm_hucow_tf" tags="" position="3315,1734" size="100,100">_ How did I get turned into a hucow?
+_ Well, there&#39;s a magic potion that can mix human DNA with that of cows and turn them into hucows. Don&#39;t ask me the details, I don&#39;t know anything about it.
+_ But I don&#39;t remember drinking any potion before coming.
+Loic gave me an orange juice, but it doesn&#39;t turn you into a hucow.
+_ Loic gave you orange juice, you say? How do you know it was really orange juice? An experienced alchemist can easily change the taste of his potions.
+
+You&#39;re thinking... Loic would have made you drink the potion without telling you? You&#39;re gonna need to have a little talk with him.
+
+&lt;&lt;display Philippe_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="170" name="Philippe_talk_Farm_borrow_phone" tags="" position="3433,1733" size="100,100">Of course, I have a landline phone in the living room. Use it whenever you want.
+
+&lt;&lt;display Philippe_talk_Farm&gt;&gt;</tw-passagedata><tw-passagedata pid="171" name="Philippe_talk_Farm_beautiful_cows" tags="" position="3547,1740" size="100,100">Thank you, I always took care of them and made sure they were healthy. I would do the same with you.
+
+&lt;&lt;display Philippe_talk_Farm&gt;&gt;
+
+&lt;&lt;run Philippe.addLove(1)&gt;&gt;</tw-passagedata><tw-passagedata pid="172" name="phone_calling_loic_hucow_tf" tags="" position="2460,1408" size="100,100">_ Of course it&#39;s me! Who else do you want it to be?
+_ You didn&#39;t tell me.
+_ I wanted to surprise you.
+_ Huuurgh !
+
+&lt;&lt;display phone_calling_loic_choice&gt;&gt;</tw-passagedata><tw-passagedata pid="173" name="Philippe_talk_Farm_Morann_and_Lisa" tags="" position="3659,1730" size="100,100">Morann is my first hucow. We have lived together for many years.
+Lisa is from here for a short time in comparison.
+Morann and I have hosted many human girls for their vacations here. But Lisa is the only one who wanted to stay with us.
+
+&lt;&lt;display Philippe_talk_Farm&gt;&gt;
+
+&lt;&lt;run Philippe.addLove(1)&gt;&gt;</tw-passagedata></tw-storydata>
 	<script id="script-sugarcube" type="text/javascript">
 	/*! SugarCube JS */
 	if(document.documentElement.getAttribute("data-init")==="loading"){!function(window,document,jQuery,undefined){"use strict";function _classCallCheck(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function _toConsumableArray(e){if(Array.isArray(e)){for(var t=0,r=Array(e.length);t<e.length;t++)r[t]=e[t];return r}return Array.from(e)}var _createClass=function(){function e(e,t){for(var r=0;r<t.length;r++){var n=t[r];n.enumerable=n.enumerable||!1,n.configurable=!0,"value"in n&&(n.writable=!0),Object.defineProperty(e,n.key,n)}}return function(t,r,n){return r&&e(t.prototype,r),n&&e(t,n),t}}(),_slicedToArray=function(){function e(e,t){var r=[],n=!0,a=!1,i=undefined;try{for(var o,s=e[Symbol.iterator]();!(n=(o=s.next()).done)&&(r.push(o.value),!t||r.length!==t);n=!0);}catch(e){a=!0,i=e}finally{try{!n&&s.return&&s.return()}finally{if(a)throw i}}return r}return function(t,r){if(Array.isArray(t))return t;if(Symbol.iterator in Object(t))return e(t,r);throw new TypeError("Invalid attempt to destructure non-iterable instance")}}(),_typeof="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e},errorPrologRegExp=/^(?:(?:uncaught\s+(?:exception:\s+)?)?\w*(?:error|exception|_err):\s+)+/i,Alert=function(){function e(e,t,r,n){var a="fatal"===e,i="Apologies! "+(a?"A fatal":"An")+" error has occurred.";i+=a?" Aborting.":" You may be able to continue, but some parts may not work properly.",null==t&&null==r||(i+="\n\nError",null!=t&&(i+=" ["+t+"]"),i+=null!=r?": "+r.replace(errorPrologRegExp,"")+".":": unknown error."),"object"===(void 0===n?"undefined":_typeof(n))&&n.stack&&(i+="\n\nStack Trace:\n"+n.stack),window.alert(i)}function t(t,r,n){e(null,t,r,n)}function r(t,r,n){e("fatal",t,r,n)}return function(e){window.onerror=function(n,a,i,o,s){"complete"===document.readyState?t(null,n,s):(r(null,n,s),window.onerror=e,"function"==typeof window.onerror&&window.onerror.apply(this,arguments))}}(window.onerror),Object.freeze(Object.defineProperties({},{error:{value:t},fatal:{value:r}}))}(),Patterns=function(){var e=function(){var e=new Map([[" ","\\u0020"],["\f","\\f"],["\n","\\n"],["\r","\\r"],["\t","\\t"],["\v","\\v"],[" ","\\u00a0"],[" ","\\u1680"],["᠎","\\u180e"],[" ","\\u2000"],[" ","\\u2001"],[" ","\\u2002"],[" ","\\u2003"],[" ","\\u2004"],[" ","\\u2005"],[" ","\\u2006"],[" ","\\u2007"],[" ","\\u2008"],[" ","\\u2009"],[" ","\\u200a"],["\u2028","\\u2028"],["\u2029","\\u2029"],[" ","\\u202f"],[" ","\\u205f"],["　","\\u3000"],["\ufeff","\\ufeff"]]),t=/^\s$/,r="";return e.forEach(function(e,n){t.test(n)||(r+=e)}),r?"[\\s"+r+"]":"\\s"}(),t="\\s"===e?"\\S":e.replace(/^\[/,"[^"),r="[0-9A-Z_a-z\\-\\u00c0-\\u00d6\\u00d8-\\u00f6\\u00f8-\\u00ff\\u0150\\u0170\\u0151\\u0171]",n=r.replace("\\-",""),a=function(){return"("+r+"+)\\(([^\\)\\|\\n]+)\\):|("+r+"+):([^;\\|\\n]+);|((?:\\."+r+"+)+);|((?:#"+r+"+)+);"}();return Object.freeze({space:e,spaceNoTerminator:"[\\u0020\\f\\t\\v\\u00a0\\u1680\\u180e\\u2000-\\u200a\\u202f\\u205f\\u3000\\ufeff]",lineTerminator:"[\\n\\r\\u2028\\u2029]",notSpace:t,anyChar:"(?:.|[\\n\\r\\u2028\\u2029])",anyLetter:r,anyLetterStrict:n,identifierFirstChar:"[$A-Z_a-z]",identifierNextChar:"[$0-9A-Z_a-z]",identifier:"[$A-Z_a-z][$0-9A-Z_a-z]*",variableSigil:"[$_]",variable:"[$_][$A-Z_a-z][$0-9A-Z_a-z]*",macroName:"[A-Za-z][\\w-]*|[=-]",templateName:"[A-Za-z][\\w-]*",cssImage:"\\[[<>]?[Ii][Mm][Gg]\\[(?:\\s|\\S)*?\\]\\]+",inlineCss:a,url:"(?:file|https?|mailto|ftp|javascript|irc|news|data):[^\\s'\"]+"})}();!function(){!function(e){if(e&&e.prototype&&null==e.prototype.firstElementChild){var t=Node.ELEMENT_NODE;Object.defineProperty(e.prototype,"firstElementChild",{get:function(){for(var e=this.childNodes,r=0;r<e.length;++r){var n=e[r];if(n.nodeType===t)return n}return null}})}}(window.Node||window.Element)}(),function(){function e(e,t){var r=Number.parseInt(e,10)||0;if(r<1)return"";var n=void 0===t?"":String(t);for(""===n&&(n=" ");n.length<r;){var a=n.length,i=r-a;n+=a>i?n.slice(0,i):n}return n.length>r&&(n=n.slice(0,r)),n}var t=function(){function e(e,n){var a=String(e);if(!a)return a;switch(n){case"start":return t.test(a)?a.replace(t,""):a;case"end":return r.test(a)?a.replace(r,""):a;default:throw new Error('_trimString called with incorrect where parameter value: "'+n+'"')}}var t=new RegExp("^"+Patterns.space+Patterns.space+"*"),r=new RegExp(""+Patterns.space+Patterns.space+"*$");return e}();Array.prototype.flat||Object.defineProperty(Array.prototype,"flat",{configurable:!0,writable:!0,value:function(){function e(){if(null==this)throw new TypeError("Array.prototype.flat called on null or undefined");var t=0===arguments.length?1:Number(arguments[0])||0;return t<1?Array.prototype.slice.call(this):Array.prototype.reduce.call(this,function(r,n){return n instanceof Array?r.push.apply(r,_toConsumableArray(e.call(n,t-1))):r.push(n),r},[])}return e}()}),Array.prototype.flatMap||Object.defineProperty(Array.prototype,"flatMap",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.flatMap called on null or undefined");return Array.prototype.map.apply(this,arguments).flat()}}),Array.prototype.includes||Object.defineProperty(Array.prototype,"includes",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.includes called on null or undefined");if(0===arguments.length)return!1;var e=this.length>>>0;if(0===e)return!1;var t=arguments[0],r=Number(arguments[1])||0;for(r<0&&(r=Math.max(0,e+r));r<e;++r){var n=this[r];if(n===t||n!==n&&t!==t)return!0}return!1}}),Object.entries||Object.defineProperty(Object,"entries",{configurable:!0,writable:!0,value:function(e){if("object"!==(void 0===e?"undefined":_typeof(e))||null===e)throw new TypeError("Object.entries object parameter must be an object");return Object.keys(e).map(function(t){return[t,e[t]]})}}),Object.fromEntries||Object.defineProperty(Object,"fromEntries",{configurable:!0,writable:!0,value:function(e){return Array.from(e).reduce(function(e,t){if(Object(t)!==t)throw new TypeError("Object.fromEntries iterable parameter must yield objects");return t[0]in e?Object.defineProperty(e,t[0],{configurable:!0,enumerable:!0,writable:!0,value:t[1]}):e[t[0]]=t[1],e},{})}}),Object.getOwnPropertyDescriptors||Object.defineProperty(Object,"getOwnPropertyDescriptors",{configurable:!0,writable:!0,value:function(e){if(null==e)throw new TypeError("Object.getOwnPropertyDescriptors object parameter is null or undefined");var t=Object(e);return Reflect.ownKeys(t).reduce(function(e,r){var n=Object.getOwnPropertyDescriptor(t,r);return void 0!==n&&(r in e?Object.defineProperty(e,r,{configurable:!0,enumerable:!0,writable:!0,value:n}):e[r]=n),e},{})}}),Object.values||Object.defineProperty(Object,"values",{configurable:!0,writable:!0,value:function(e){if("object"!==(void 0===e?"undefined":_typeof(e))||null===e)throw new TypeError("Object.values object parameter must be an object");return Object.keys(e).map(function(t){return e[t]})}}),String.prototype.padStart||Object.defineProperty(String.prototype,"padStart",{configurable:!0,writable:!0,value:function(t,r){if(null==this)throw new TypeError("String.prototype.padStart called on null or undefined");var n=String(this),a=n.length,i=Number.parseInt(t,10);return i<=a?n:e(i-a,r)+n}}),String.prototype.padEnd||Object.defineProperty(String.prototype,"padEnd",{configurable:!0,writable:!0,value:function(t,r){if(null==this)throw new TypeError("String.prototype.padEnd called on null or undefined");var n=String(this),a=n.length,i=Number.parseInt(t,10);return i<=a?n:n+e(i-a,r)}}),String.prototype.trimStart||Object.defineProperty(String.prototype,"trimStart",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.trimStart called on null or undefined");return t(this,"start")}}),String.prototype.trimLeft||Object.defineProperty(String.prototype,"trimLeft",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.trimLeft called on null or undefined");return t(this,"start")}}),String.prototype.trimEnd||Object.defineProperty(String.prototype,"trimEnd",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.trimEnd called on null or undefined");return t(this,"end")}}),String.prototype.trimRight||Object.defineProperty(String.prototype,"trimRight",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.trimRight called on null or undefined");return t(this,"end")}})}(),function(){function _random(){var e=void 0,t=void 0;switch(arguments.length){case 0:throw new Error("_random called with insufficient parameters");case 1:e=0,t=arguments[0];break;default:e=arguments[0],t=arguments[1]}if(e>t){var r=[t,e];e=r[0],t=r[1]}return Math.floor(_nativeMathRandom()*(t-e+1))+e}function _randomIndex(e,t){var r=void 0,n=void 0;switch(t.length){case 1:r=0,n=e-1;break;case 2:r=0,n=Math.trunc(t[1]);break;default:r=Math.trunc(t[1]),n=Math.trunc(t[2])}return Number.isNaN(r)?r=0:!Number.isFinite(r)||r>=e?r=e-1:r<0&&(r=e+r)<0&&(r=0),Number.isNaN(n)?n=0:!Number.isFinite(n)||n>=e?n=e-1:n<0&&(n=e+n)<0&&(n=e-1),_random(r,n)}function _getCodePointStartAndEnd(e,t){var r=e.charCodeAt(t);if(Number.isNaN(r))return{char:"",start:-1,end:-1};if(r<55296||r>57343)return{char:e.charAt(t),start:t,end:t};if(r>=55296&&r<=56319){var n=t+1;if(n>=e.length)throw new Error("high surrogate without trailing low surrogate");var a=e.charCodeAt(n);if(a<56320||a>57343)throw new Error("high surrogate without trailing low surrogate");return{char:e.charAt(t)+e.charAt(n),start:t,end:n}}if(0===t)throw new Error("low surrogate without leading high surrogate");var i=t-1,o=e.charCodeAt(i);if(o<55296||o>56319)throw new Error("low surrogate without leading high surrogate");return{char:e.charAt(i)+e.charAt(t),start:i,end:t}}var _nativeMathRandom=Math.random;Object.defineProperty(Array,"random",{configurable:!0,writable:!0,value:function(e){if("object"!==(void 0===e?"undefined":_typeof(e))||null===e||!Object.prototype.hasOwnProperty.call(e,"length"))throw new TypeError("Array.random array parameter must be an array or array-lke object");var t=e.length>>>0;if(0!==t){return e[0===arguments.length?_random(0,t-1):_randomIndex(t,Array.prototype.slice.call(arguments,1))]}}}),Object.defineProperty(Array.prototype,"concatUnique",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.concatUnique called on null or undefined");var e=Array.from(this);if(0===arguments.length)return e;var t=Array.prototype.reduce.call(arguments,function(e,t){return e.concat(t)},[]),r=t.length;if(0===r)return e;for(var n=Array.prototype.indexOf,a=Array.prototype.push,i=0;i<r;++i){var o=t[i];-1===n.call(e,o)&&a.call(e,o)}return e}}),Object.defineProperty(Array.prototype,"count",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.count called on null or undefined");for(var e=Array.prototype.indexOf,t=arguments[0],r=Number(arguments[1])||0,n=0;-1!==(r=e.call(this,t,r));)++n,++r;return n}}),Object.defineProperty(Array.prototype,"delete",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.delete called on null or undefined");if(0===arguments.length)return[];var e=this.length>>>0;if(0===e)return[];for(var t=Array.prototype.concat.apply([],arguments),r=t.length,n=[],a=0;a<e;++a)for(var i=this[a],o=0;o<r;++o){var s=t[o];if(i===s||i!==i&&s!==s){n.push(a);break}}for(var u=[],l=0,c=n.length;l<c;++l)u[l]=this[n[l]];for(var d=Array.prototype.splice,f=n.length-1;f>=0;--f)d.call(this,n[f],1);return u}}),Object.defineProperty(Array.prototype,"deleteAt",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.deleteAt called on null or undefined");if(0===arguments.length)return[];var e=this.length>>>0;if(0===e)return[];for(var t=Array.prototype.splice,r=[].concat(_toConsumableArray(new Set(Array.prototype.concat.apply([],arguments).map(function(t){return t<0?Math.max(0,e+t):t})).values())),n=[].concat(_toConsumableArray(r)).sort(function(e,t){return t-e}),a=[],i=0,o=r.length;i<o;++i)a[i]=this[r[i]];for(var s=0,u=n.length;s<u;++s)t.call(this,n[s],1);return a}}),Object.defineProperty(Array.prototype,"deleteWith",{configurable:!0,writable:!0,value:function(e,t){if(null==this)throw new TypeError("Array.prototype.deleteWith called on null or undefined");if("function"!=typeof e)throw new Error("Array.prototype.deleteWith predicate parameter must be a function");var r=this.length>>>0;if(0===r)return[];for(var n=Array.prototype.splice,a=[],i=[],o=0;o<r;++o)e.call(t,this[o],o,this)&&(i.push(this[o]),a.push(o));for(var s=a.length-1;s>=0;--s)n.call(this,a[s],1);return i}}),Object.defineProperty(Array.prototype,"first",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.first called on null or undefined");if(0!=this.length>>>0)return this[0]}}),Object.defineProperty(Array.prototype,"includesAll",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.includesAll called on null or undefined");if(1===arguments.length)return Array.isArray(arguments[0])?Array.prototype.includesAll.apply(this,arguments[0]):Array.prototype.includes.apply(this,arguments);for(var e=0,t=arguments.length;e<t;++e)if(!Array.prototype.some.call(this,function(e){return e===this.val||e!==e&&this.val!==this.val},{val:arguments[e]}))return!1;return!0}}),Object.defineProperty(Array.prototype,"includesAny",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.includesAny called on null or undefined");if(1===arguments.length)return Array.isArray(arguments[0])?Array.prototype.includesAny.apply(this,arguments[0]):Array.prototype.includes.apply(this,arguments);for(var e=0,t=arguments.length;e<t;++e)if(Array.prototype.some.call(this,function(e){return e===this.val||e!==e&&this.val!==this.val},{val:arguments[e]}))return!0;return!1}}),Object.defineProperty(Array.prototype,"last",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.last called on null or undefined");var e=this.length>>>0;if(0!==e)return this[e-1]}}),Object.defineProperty(Array.prototype,"pluck",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.pluck called on null or undefined");var e=this.length>>>0;if(0!==e){var t=0===arguments.length?_random(0,e-1):_randomIndex(e,[].concat(Array.prototype.slice.call(arguments)));return Array.prototype.splice.call(this,t,1)[0]}}}),Object.defineProperty(Array.prototype,"pluckMany",{configurable:!0,writable:!0,value:function(e){if(null==this)throw new TypeError("Array.prototype.pluckMany called on null or undefined");var t=this.length>>>0;if(0===t)return[];var r=Math.trunc(e);if(!Number.isInteger(r))throw new Error("Array.prototype.pluckMany want parameter must be an integer");if(r<1)return[];r>t&&(r=t);var n=Array.prototype.splice,a=[],i=t-1;do{a.push(n.call(this,_random(0,i--),1)[0])}while(a.length<r);return a}}),Object.defineProperty(Array.prototype,"pushUnique",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.pushUnique called on null or undefined");var e=arguments.length;if(0===e)return this.length>>>0;for(var t=Array.prototype.indexOf,r=Array.prototype.push,n=0;n<e;++n){var a=arguments[n];-1===t.call(this,a)&&r.call(this,a)}return this.length>>>0}}),Object.defineProperty(Array.prototype,"random",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.random called on null or undefined");var e=this.length>>>0;if(0!==e){return this[0===arguments.length?_random(0,e-1):_randomIndex(e,[].concat(Array.prototype.slice.call(arguments)))]}}}),Object.defineProperty(Array.prototype,"randomMany",{configurable:!0,writable:!0,value:function(e){if(null==this)throw new TypeError("Array.prototype.randomMany called on null or undefined");var t=this.length>>>0;if(0===t)return[];var r=Math.trunc(e);if(!Number.isInteger(r))throw new Error("Array.prototype.randomMany want parameter must be an integer");if(r<1)return[];r>t&&(r=t);var n=new Map,a=[],i=t-1;do{var o=void 0;do{o=_random(0,i)}while(n.has(o));n.set(o,!0),a.push(this[o])}while(a.length<r);return a}}),Object.defineProperty(Array.prototype,"shuffle",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.shuffle called on null or undefined");var e=this.length>>>0;if(0===e)return this;for(var t=e-1;t>0;--t){var r=Math.floor(_nativeMathRandom()*(t+1));if(t!==r){var n=this[t];this[t]=this[r],this[r]=n}}return this}}),Object.defineProperty(Array.prototype,"unshiftUnique",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.unshiftUnique called on null or undefined");var e=arguments.length;if(0===e)return this.length>>>0;for(var t=Array.prototype.indexOf,r=Array.prototype.unshift,n=0;n<e;++n){var a=arguments[n];-1===t.call(this,a)&&r.call(this,a)}return this.length>>>0}}),Object.defineProperty(Function.prototype,"partial",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Function.prototype.partial called on null or undefined");var e=Array.prototype.slice,t=this,r=e.call(arguments,0);return function(){for(var n=[],a=0,i=0;i<r.length;++i)n.push(r[i]===undefined?arguments[a++]:r[i]);return t.apply(this,n.concat(e.call(arguments,a)))}}}),Object.defineProperty(Math,"clamp",{configurable:!0,writable:!0,value:function(e,t,r){var n=Number(e);return Number.isNaN(n)?NaN:n.clamp(t,r)}}),Object.defineProperty(Math,"easeInOut",{configurable:!0,writable:!0,value:function(e){return 1-(Math.cos(Number(e)*Math.PI)+1)/2}}),Object.defineProperty(Number.prototype,"clamp",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Number.prototype.clamp called on null or undefined");if(2!==arguments.length)throw new Error("Number.prototype.clamp called with an incorrect number of parameters");var e=Number(arguments[0]),t=Number(arguments[1]);if(e>t){var r=[t,e];e=r[0],t=r[1]}return Math.min(Math.max(this,e),t)}}),RegExp.escape||function(){var e=/[\\^$*+?.()|[\]{}]/g,t=new RegExp(e.source);Object.defineProperty(RegExp,"escape",{configurable:!0,writable:!0,value:function(r){var n=String(r);return n&&t.test(n)?n.replace(e,"\\$&"):n}})}(),function(){var e=/{(\d+)(?:,([+-]?\d+))?}/g,t=new RegExp(e.source);Object.defineProperty(String,"format",{configurable:!0,writable:!0,value:function(r){function n(e,t,r){if(!t)return e;var n=Math.abs(t)-e.length;if(n<1)return e;var a=String(r).repeat(n);return t<0?e+a:a+e}if(arguments.length<2)return 0===arguments.length?"":r;var a=2===arguments.length&&Array.isArray(arguments[1])?[].concat(_toConsumableArray(arguments[1])):Array.prototype.slice.call(arguments,1);return 0===a.length?r:t.test(r)?(e.lastIndex=0,r.replace(e,function(e,t,r){var i=a[t];if(null==i)return"";for(;"function"==typeof i;)i=i();switch(void 0===i?"undefined":_typeof(i)){case"string":break;case"object":i=JSON.stringify(i);break;default:i=String(i)}return n(i,r?Number.parseInt(r,10):0," ")})):r}})}(),Object.defineProperty(String.prototype,"contains",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.contains called on null or undefined");return-1!==String.prototype.indexOf.apply(this,arguments)}}),Object.defineProperty(String.prototype,"count",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.count called on null or undefined");var e=String(arguments[0]||"");if(""===e)return 0;for(var t=String.prototype.indexOf,r=e.length,n=Number(arguments[1])||0,a=0;-1!==(n=t.call(this,e,n));)++a,n+=r;return a}}),Object.defineProperty(String.prototype,"first",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.first called on null or undefined");return _getCodePointStartAndEnd(String(this),0).char}}),Object.defineProperty(String.prototype,"last",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.last called on null or undefined");var e=String(this);return _getCodePointStartAndEnd(e,e.length-1).char}}),Object.defineProperty(String.prototype,"splice",{configurable:!0,writable:!0,value:function(e,t,r){if(null==this)throw new TypeError("String.prototype.splice called on null or undefined");var n=this.length>>>0;if(0===n)return"";var a=Number(e);Number.isSafeInteger(a)?a<0&&(a+=n)<0&&(a=0):a=0,a>n&&(a=n);var i=Number(t);(!Number.isSafeInteger(i)||i<0)&&(i=0);var o=this.slice(0,a);return void 0!==r&&(o+=r),a+i<n&&(o+=this.slice(a+i)),o}}),Object.defineProperty(String.prototype,"splitOrEmpty",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.splitOrEmpty called on null or undefined");return""===String(this)?[]:String.prototype.split.apply(this,arguments)}}),Object.defineProperty(String.prototype,"toLocaleUpperFirst",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.toLocaleUpperFirst called on null or undefined");var e=String(this),t=_getCodePointStartAndEnd(e,0),r=t.char,n=t.end;return-1===n?"":r.toLocaleUpperCase()+e.slice(n+1)}}),Object.defineProperty(String.prototype,"toUpperFirst",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.toUpperFirst called on null or undefined");var e=String(this),t=_getCodePointStartAndEnd(e,0),r=t.char,n=t.end;return-1===n?"":r.toUpperCase()+e.slice(n+1)}}),Object.defineProperty(Date.prototype,"toJSON",{configurable:!0,writable:!0,value:function(){return["(revive:date)",this.toISOString()]}}),Object.defineProperty(Function.prototype,"toJSON",{configurable:!0,writable:!0,value:function(){return["(revive:eval)","("+this.toString()+")"]}}),Object.defineProperty(Map.prototype,"toJSON",{configurable:!0,writable:!0,value:function(){return["(revive:map)",[].concat(_toConsumableArray(this))]}}),Object.defineProperty(RegExp.prototype,"toJSON",{configurable:!0,writable:!0,value:function(){return["(revive:eval)",this.toString()]}}),Object.defineProperty(Set.prototype,"toJSON",{configurable:!0,writable:!0,value:function(){return["(revive:set)",[].concat(_toConsumableArray(this))]}}),Object.defineProperty(JSON,"reviveWrapper",{configurable:!0,writable:!0,value:function(e,t){if("string"!=typeof e)throw new TypeError("JSON.reviveWrapper code parameter must be a string");return["(revive:eval)",[e,t]]}}),Object.defineProperty(JSON,"_real_parse",{value:JSON.parse}),Object.defineProperty(JSON,"parse",{configurable:!0,writable:!0,value:function value(text,reviver){return JSON._real_parse(text,function(key,val){var value=val;if(Array.isArray(value)&&2===value.length)switch(value[0]){case"(revive:set)":value=new Set(value[1]);break;case"(revive:map)":value=new Map(value[1]);break;case"(revive:date)":value=new Date(value[1]);break;case"(revive:eval)":try{if(Array.isArray(value[1])){var $ReviveData$=value[1][1];value=eval(value[1][0])}else value=eval(value[1])}catch(e){}}else if("string"==typeof value&&"@@revive@@"===value.slice(0,10))try{value=eval(value.slice(10))}catch(e){}if("function"==typeof reviver)try{value=reviver(key,value)}catch(e){}return value})}}),Object.defineProperty(Array.prototype,"contains",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.contains called on null or undefined");return Array.prototype.includes.apply(this,arguments)}}),Object.defineProperty(Array.prototype,"containsAll",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.containsAll called on null or undefined");return Array.prototype.includesAll.apply(this,arguments)}}),Object.defineProperty(Array.prototype,"containsAny",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.containsAny called on null or undefined");return Array.prototype.includesAny.apply(this,arguments)}}),Object.defineProperty(Array.prototype,"flatten",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("Array.prototype.flatten called on null or undefined");return Array.prototype.flat.call(this,1/0)}}),Object.defineProperty(String.prototype,"readBracketedList",{configurable:!0,writable:!0,value:function(){if(null==this)throw new TypeError("String.prototype.readBracketedList called on null or undefined");for(var e=new RegExp("(?:\\[\\[((?:\\s|\\S)*?)\\]\\])|([^\"'\\s]\\S*)","gm"),t=[],r=void 0;null!==(r=e.exec(this));)r[1]?t.push(r[1]):r[2]&&t.push(r[2]);return t}})}();var Browser=function(){var e=navigator.userAgent.toLowerCase(),t=e.includes("windows phone"),r=Object.freeze({Android:!t&&e.includes("android"),BlackBerry:/blackberry|bb10/.test(e),iOS:!t&&/ip(?:hone|ad|od)/.test(e),Opera:!t&&("object"===_typeof(window.operamini)||e.includes("opera mini")),Windows:t||/iemobile|wpdesktop/.test(e),any:function(){return r.Android||r.BlackBerry||r.iOS||r.Opera||r.Windows}}),n=!r.Windows&&!/khtml|trident|edge/.test(e)&&e.includes("gecko"),a=!e.includes("opera")&&/msie|trident/.test(e),i=a?function(){var t=/(?:msie\s+|rv:)(\d+\.\d)/.exec(e);return t?Number(t[1]):0}():null,o=e.includes("opera")||e.includes(" opr/"),s=o?function(){var t=new RegExp((/khtml|chrome/.test(e)?"opr":"version")+"\\/(\\d+\\.\\d+)"),r=t.exec(e);return r?Number(r[1]):0}():null,u=e.includes("vivaldi");return Object.freeze({userAgent:e,isMobile:r,isGecko:n,isIE:a,ieVersion:i,isOpera:o,operaVersion:s,isVivaldi:u})}(),Has=function(){var e=function(){try{return"function"==typeof document.createElement("audio").canPlayType}catch(e){}return!1}(),t=e&&function(){try{var e=document.createElement("audio").play();return e.catch(function(){}),e instanceof Promise}catch(e){}return!1}(),r=function(){try{return"Blob"in window&&"File"in window&&"FileList"in window&&"FileReader"in window&&!Browser.isMobile.any()&&(!Browser.isOpera||Browser.operaVersion>=15)}catch(e){}return!1}(),n=function(){try{return"geolocation"in navigator&&"function"==typeof navigator.geolocation.getCurrentPosition&&"function"==typeof navigator.geolocation.watchPosition}catch(e){}return!1}(),a=function(){try{return"MutationObserver"in window&&"function"==typeof window.MutationObserver}catch(e){}return!1}(),i=function(){try{return"performance"in window&&"function"==typeof window.performance.now}catch(e){}return!1}(),o=function(){try{return"ontouchstart"in window||!!window.DocumentTouch&&document instanceof window.DocumentTouch||!!navigator.maxTouchPoints||!!navigator.msMaxTouchPoints}catch(e){}return!1}(),s=function(){try{for(var e=new Map([["transition","transitionend"],["MSTransition","msTransitionEnd"],["WebkitTransition","webkitTransitionEnd"],["MozTransition","transitionend"]]),t=[].concat(_toConsumableArray(e.keys())),r=document.createElement("div"),n=0;n<t.length;++n)if(r.style[t[n]]!==undefined)return e.get(t[n])}catch(e){}return!1}();return Object.freeze({audio:e,audioPromise:t,fileAPI:r,geolocation:n,mutationObserver:a,performance:i,touch:o,transitionEndEvent:s})}(),Visibility=function(){function e(){return Boolean(r&&document[r.hiddenProperty])}function t(){return r&&document[r.stateProperty]||"visible"}var r=function(){try{return Object.freeze([{hiddenProperty:"hidden",stateProperty:"visibilityState",changeEvent:"visibilitychange"},{hiddenProperty:"webkitHidden",stateProperty:"webkitVisibilityState",changeEvent:"webkitvisibilitychange"},{hiddenProperty:"mozHidden",stateProperty:"mozVisibilityState",changeEvent:"mozvisibilitychange"},{hiddenProperty:"msHidden",stateProperty:"msVisibilityState",changeEvent:"msvisibilitychange"}].find(function(e){return e.hiddenProperty in document}))}catch(e){}return null}();return Object.freeze(Object.defineProperties({},{isHidden:{value:e},state:{value:t},hiddenProperty:{value:r.hiddenProperty},stateProperty:{value:r.stateProperty},changeEvent:{value:r.changeEvent}}))}(),_ref3=function(){function e(t){if("object"!==(void 0===t?"undefined":_typeof(t))||null===t)return t;if(t instanceof String)return String(t);if(t instanceof Number)return Number(t);if(t instanceof Boolean)return Boolean(t);if("function"==typeof t.clone)return t.clone(!0);if(t.nodeType&&"function"==typeof t.cloneNode)return t.cloneNode(!0);var r=void 0;return t instanceof Array?r=new Array(t.length):t instanceof Date?r=new Date(t.getTime()):t instanceof Map?(r=new Map,t.forEach(function(t,n){return r.set(n,e(t))})):t instanceof RegExp?r=new RegExp(t):t instanceof Set?(r=new Set,t.forEach(function(t){return r.add(e(t))})):r=Object.create(Object.getPrototypeOf(t)),Object.keys(t).forEach(function(n){return r[n]=e(t[n])}),r}function t(e){for(var t=document.createDocumentFragment(),r=document.createElement("p"),n=void 0;null!==(n=e.firstChild);){if(n.nodeType===Node.ELEMENT_NODE){switch(n.nodeName.toUpperCase()){case"BR":if(null!==n.nextSibling&&n.nextSibling.nodeType===Node.ELEMENT_NODE&&"BR"===n.nextSibling.nodeName.toUpperCase()){e.removeChild(n.nextSibling),e.removeChild(n),t.appendChild(r),r=document.createElement("p");continue}if(!r.hasChildNodes()){e.removeChild(n);continue}break;case"ADDRESS":case"ARTICLE":case"ASIDE":case"BLOCKQUOTE":case"CENTER":case"DIV":case"DL":case"FIGURE":case"FOOTER":case"FORM":case"H1":case"H2":case"H3":case"H4":case"H5":case"H6":case"HEADER":case"HR":case"MAIN":case"NAV":case"OL":case"P":case"PRE":case"SECTION":case"TABLE":case"UL":r.hasChildNodes()&&(t.appendChild(r),r=document.createElement("p")),t.appendChild(n);continue}}r.appendChild(n)}r.hasChildNodes()&&t.appendChild(r),e.appendChild(t)}function r(){try{return document.activeElement||null}catch(e){return null}}function n(e,t,r){var n="object"===(void 0===e?"undefined":_typeof(e))?e:document.getElementById(e);if(null==n)return null;var a=Array.isArray(t)?t:[t];jQuery(n).empty();for(var i=0,o=a.length;i<o;++i)if(Story.has(a[i]))return new Wikifier(n,Story.get(a[i]).processText().trim()),n;if(null!=r){var s=String(r).trim();""!==s&&new Wikifier(n,s)}return n}function a(e,t,r){var n=jQuery(document.createElement("div")),a=jQuery(document.createElement("button")),i=jQuery(document.createElement("pre")),o=L10n.get("errorTitle")+": "+(t||"unknown error");return a.addClass("error-toggle").ariaClick({label:L10n.get("errorToggle")},function(){a.hasClass("enabled")?(a.removeClass("enabled"),i.attr({"aria-hidden":!0,hidden:"hidden"})):(a.addClass("enabled"),i.removeAttr("aria-hidden hidden"))}).appendTo(n),jQuery(document.createElement("span")).addClass("error").text(o).appendTo(n),jQuery(document.createElement("code")).text(r).appendTo(i),i.addClass("error-source").attr({"aria-hidden":!0,hidden:"hidden"}).appendTo(n),n.addClass("error-view").appendTo(e),console.warn(o+"\n\t"+r.replace(/\n/g,"\n\t")),!1}function i(e,t){var r=i;switch(void 0===e?"undefined":_typeof(e)){case"number":if(Number.isNaN(e))return t;break;case"object":if(null===e)return t;if(Array.isArray(e))return e.map(function(e){return r(e,t)}).join(", ");if(e instanceof Set)return[].concat(_toConsumableArray(e)).map(function(e){return r(e,t)}).join(", ");if(e instanceof Map){return"{ "+[].concat(_toConsumableArray(e)).map(function(e){var n=_slicedToArray(e,2),a=n[0],i=n[1];return r(a,t)+" → "+r(i,t)}).join(", ")+" }"}return e instanceof Date?e.toLocaleString():"function"==typeof e.toString?e.toString():Object.prototype.toString.call(e);case"function":case"undefined":return t}return String(e)}return Object.freeze(Object.defineProperties({},{clone:{value:e},convertBreaks:{value:t},safeActiveElement:{value:r},setPageElement:{value:n},throwError:{value:a},toStringOrDefault:{value:i}}))
